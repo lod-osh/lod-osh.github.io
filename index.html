@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derek Carttar — Technical Writing Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; font-family: 'Source Sans 3', sans-serif; background: #FAF8F5; color: #1F2937; overflow-x: hidden; }
+  a { color: #B45309; }
+  a:hover { color: #8A3E09; }
+  h1, h2, h3 { font-family: 'Source Sans 3', sans-serif; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 24px); }
+  .section { padding: clamp(32px, 8vw, 64px) 0; }
+  ul { padding-left: 20px; line-height: 1.8; }
+  .btn { text-decoration: none; padding: clamp(11px, 2.5vw, 14px) clamp(18px, 4vw, 28px); border-radius: 8px; font-weight: 600; font-size: clamp(14px, 2.5vw, 16px); display: inline-block; }
+  .btn-dark { background: #1F2937; color: #FAF8F5; }
+  .btn-outline { background: transparent; color: #1F2937; border: 1px solid #1F2937; }
+  .btn-accent { background: #B45309; color: #FAF8F5; }
+
+  nav { position: sticky; top: 0; background: #FAF8F5; border-bottom: 1px solid #E7E2D8; z-index: 20; }
+  nav .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: clamp(12px, 3vw, 20px) clamp(16px, 5vw, 24px); max-width: 1280px; gap: 12px; }
+  nav .links { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(10px, 2vw, 24px); }
+  nav a { text-decoration: none; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; }
+
+  .dropdown { position: relative; }
+  .dropdown summary { list-style: none; cursor: pointer; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; }
+  .dropdown summary::-webkit-details-marker { display: none; }
+  .dropdown summary::after { content: '▾'; margin-left: 5px; font-size: 11px; }
+  .dropdown[open] summary::after { content: '▴'; }
+  .dropdown-menu { position: absolute; top: calc(100% + 10px); left: 0; background: #FFFFFF; border: 1px solid #E7E2D8; border-radius: 10px; box-shadow: 0 8px 20px rgba(31,41,55,0.12); min-width: 200px; padding: 6px; z-index: 30; }
+  .dropdown-menu a { display: block; padding: 10px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; color: #1F2937; text-decoration: none; white-space: nowrap; }
+  .dropdown-menu a:hover { background: #F3EEE4; }
+
+  .bg-cream { background: #F3EEE4; }
+  .bg-dark { background: #1F2937; }
+  .bg-dark .wrap { color: #D6D3CE; }
+  .bg-dark h2 { color: #FAF8F5; }
+
+  .job-header { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .job-dates { font-size: clamp(13px, 2vw, 15px); color: #6B7280; }
+  .job-company { font-size: clamp(14px, 2.2vw, 16px); color: #6B7280; margin-bottom: 8px; }
+
+  .skill-group { margin-bottom: clamp(16px, 3vw, 24px); }
+  .skill-label { font-size: clamp(14px, 2.2vw, 16px); font-weight: 700; margin-bottom: 6px; }
+  .skill-list { font-size: clamp(14px, 2.2vw, 16px); line-height: 1.6; color: #44403C; }
+
+  .testimonial { background: #F3EEE4; border-left: 4px solid #B45309; padding: clamp(18px, 4vw, 32px); margin: clamp(28px, 6vw, 48px) 0; }
+  .testimonial p { font-size: clamp(15px, 2.6vw, 19px); line-height: 1.65; font-style: italic; margin: 0 0 16px 0; }
+  .testimonial cite { font-size: clamp(13px, 2vw, 15px); color: #6B7280; font-weight: 600; font-style: normal; }
+
+  .kicker { font-size: clamp(13px, 2.2vw, 16px); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #B45309; margin-bottom: 8px; }
+
+  h1.hero-name { font-size: clamp(30px, 7vw, 44px); line-height: 1.15; font-weight: 600; margin: 0 0 16px 0; }
+  .hero-sub { font-size: clamp(16px, 3vw, 20px); line-height: 1.6; color: #44403C; margin: 0 0 28px 0; }
+  .section h2 { font-size: clamp(24px, 4.5vw, 32px); }
+
+  @media (max-width: 480px) {
+    .btn { width: 100%; text-align: center; }
+    nav .links { gap: 8px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div style="font-weight: 700; font-size: clamp(16px, 3vw, 20px);">Derek Carttar</div>
+    <div class="links">
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <details class="dropdown">
+        <summary>Sample</summary>
+        <div class="dropdown-menu">
+          <a href="https://help.abcfitness.com/ignite/home.htm" target="_blank" rel="noopener">Ignite Help</a>
+          <a href="api-docs.html">API Documentation</a>
+        </div>
+      </details>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap section">
+  <div class="kicker">Senior Technical Writer and Editor</div>
+  <h1 class="hero-name">Derek Carttar</h1>
+  <p class="hero-sub">Fourteen years of experience documenting complex software systems, including API documentation, structured single-sourcing, and knowledge base architecture — most recently at a fintech/fitness-tech SaaS company.</p>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px;">
+    <a href="mailto:Dbcarttar@gmail.com" class="btn btn-dark">Dbcarttar@gmail.com</a>
+    <a href="resume.pdf" download class="btn btn-outline">Download Resume (PDF)</a>
+  </div>
+  <div style="font-size: clamp(13px, 2vw, 15px); color: #6B7280;">870-731-7035 &nbsp;·&nbsp; McCrory, AR &nbsp;·&nbsp; Open to remote</div>
+</div>
+
+<div class="bg-cream">
+  <div class="wrap section" id="about">
+    <h2 style="margin: 0 0 20px 0;">About</h2>
+    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: #33302C;">I spent 14 years as a technical writer and editor for a fintech/fitness-tech SaaS company, most recently as Senior Technical Editor. For most of that time I worked on a Documentation team of three; one team member retired about a year before I was laid off, leaving a team of two for that final stretch — which meant covering the majority of documentation for eight or more products.</p>
+    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: #33302C;">My work centered on MadCap Flare, structured single-sourcing, and Swagger/OpenAPI documentation, along with building and maintaining a tiered knowledge base that served internal staff, clients, and third-party vendors with appropriately scoped versions of shared content.</p>
+  </div>
+</div>
+
+<div class="wrap section" id="experience">
+  <h2 style="margin: 0 0 32px 0;">Experience</h2>
+
+  <div style="margin-bottom: 40px;">
+    <div class="job-header">
+      <div style="font-size: clamp(17px, 3vw, 20px); font-weight: 700;">Senior Technical Editor</div>
+      <div class="job-dates">May 2022 – August 2026</div>
+    </div>
+    <div class="job-company">ABC Fitness Solutions, LLC (formerly ABC Financial Services) — Remote</div>
+    <ul style="font-size: clamp(15px, 2.4vw, 17px); color: #33302C;">
+      <li>Documented API and product releases across 8+ products, working directly in development environments and coordinating with developers and QA testers to verify accuracy before publication.</li>
+      <li>Maintained the company's primary help system in MadCap Flare, integrating content from other technical writers on the team.</li>
+      <li>Authored and maintained Swagger/OpenAPI documentation for the company's API products.</li>
+      <li>Established and enforced style guides and documentation templates for both the Documentation team and a separate API team.</li>
+      <li>Built and maintained a tiered knowledge base for Technical Support and Training teams, serving internal, client-facing, and third-party vendor audiences with appropriately scoped content.</li>
+      <li>Built video tutorials and training content using Camtasia, Captivate, and Snagit.</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="job-header">
+      <div style="font-size: clamp(17px, 3vw, 20px); font-weight: 700;">Technical Writer III</div>
+      <div class="job-dates">August 2012 – May 2022</div>
+    </div>
+    <div class="job-company">ABC Financial Services — Little Rock, Arkansas</div>
+    <ul style="font-size: clamp(15px, 2.4vw, 17px); color: #33302C;">
+      <li>Built foundational experience with the company's documentation systems and processes, translating complex technical systems into documentation for technical and non-technical audiences, including external clients.</li>
+    </ul>
+  </div>
+
+  <div class="testimonial">
+    <p>"Derek stays calm under pressure and works through problems methodically. He keeps communication open with subject matter experts and stakeholders so everyone stays aligned on new features, and he's especially good at explaining technical material to both technical and non-technical audiences — including outside clients."</p>
+    <cite>— Nancy Howard, former manager (13 years)</cite>
+  </div>
+</div>
+
+<div class="bg-dark" id="sample">
+  <div class="wrap section">
+    <h2 style="margin: 0 0 8px 0;">Project: ABC Ignite Help Center</h2>
+    <p style="font-size: clamp(13px, 2vw, 15px); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; color: #A8A29E; margin: 0 0 24px 0;">MadCap Flare &nbsp;·&nbsp; Structured single-sourcing &nbsp;·&nbsp; Swagger/OpenAPI &nbsp;·&nbsp; Knowledge base architecture</p>
+    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7;">Most of what I wrote lived behind an internal login, but this help center — for ABC Fitness's Ignite product suite — is public, and it's built the same way everything else I maintained was: single-sourced from one set of Flare topics, using variables and conditional text to serve different audiences without duplicating content.</p>
+    <ul style="font-size: clamp(15px, 2.4vw, 17px);">
+      <li>Maintained the core help project and merged content from other writers into a shared source.</li>
+      <li>Wrote and kept current the release notes and feature documentation you'll find here as the product changed.</li>
+      <li>Authored the underlying Swagger/OpenAPI documentation for the product's API, referenced from within this help system.</li>
+      <li>Built the internal/external content split this site is one layer of — client-facing here, with separate staff- and vendor-facing versions of the same underlying content.</li>
+    </ul>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <a href="https://help.abcfitness.com/ignite/home.htm" target="_blank" rel="noopener" class="btn btn-accent">View the Ignite Help Center →</a>
+      <a href="api-docs.html" class="btn btn-outline" style="color: #FAF8F5; border-color: #FAF8F5;">View API Documentation Sample →</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap section" id="skills">
+  <h2 style="margin: 0 0 28px 0;">Skills</h2>
+
+  <div class="skill-group">
+    <div class="skill-label">Documentation and Authoring</div>
+    <div class="skill-list">MadCap Flare, MadCap Central, Swagger/OpenAPI, API Documentation, RESTful Web Services, Knowledge Base Architecture, Style Guide and Template Development, Markdown, Adobe InDesign</div>
+  </div>
+  <div class="skill-group">
+    <div class="skill-label">Tools and Platforms</div>
+    <div class="skill-list">Jira, Atlassian Suite, Confluence, Zendesk, ServiceNow, Postman, 3scale, Figma, Miro, Workday, GitHub, SVN, Version Control Systems</div>
+  </div>
+  <div class="skill-group">
+    <div class="skill-label">Video and Visual Documentation</div>
+    <div class="skill-list">Camtasia, Adobe Captivate, Snagit</div>
+  </div>
+  <div class="skill-group">
+    <div class="skill-label">AI-Assisted Workflows</div>
+    <div class="skill-list">Cursor, Claude, ChatGPT, Atlassian Rovo, workflow automation</div>
+  </div>
+  <div class="skill-group">
+    <div class="skill-label">Cross-Functional Collaboration</div>
+    <div class="skill-list">Engineering and QA coordination, Technical Support partnership, SME interviewing, stakeholder communication, editing and QA review</div>
+  </div>
+</div>
+
+<div class="wrap section">
+  <h2 style="margin: 0 0 12px 0;">Education</h2>
+  <div style="font-size: clamp(16px, 2.6vw, 18px); font-weight: 700;">Bachelor of Arts, Professional, Technical, Business, and Scientific Writing</div>
+  <div style="font-size: clamp(14px, 2.2vw, 16px); color: #6B7280;">University of Arkansas at Little Rock — 2009–2012</div>
+</div>
+
+<div class="bg-cream" id="contact">
+  <div class="wrap section">
+    <h2 style="margin: 0 0 16px 0;">Get in Touch</h2>
+    <p style="font-size: clamp(15px, 2.4vw, 17px); line-height: 1.6; color: #33302C; max-width: 640px; margin: 0 0 20px 0;">I'm looking for technical writing, editing, and documentation roles — remote or open to relocation. Feel free to reach out directly.</p>
+    <div style="display: flex; gap: clamp(12px, 3vw, 24px); flex-wrap: wrap; font-size: clamp(14px, 2.2vw, 16px); font-weight: 600;">
+      <a href="mailto:Dbcarttar@gmail.com">Dbcarttar@gmail.com</a>
+      <span style="color: #6B7280;">870-731-7035</span>
+      <span style="color: #6B7280;">McCrory, AR</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

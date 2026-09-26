@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Documentation Sample — Derek Carttar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; font-family: 'Source Sans 3', sans-serif; background: #FAF8F5; color: #1F2937; overflow-x: hidden; }
+  a { color: #B45309; }
+  a:hover { color: #8A3E09; }
+  h1, h2 { font-family: 'Source Sans 3', sans-serif; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 24px); }
+  .section { padding: clamp(28px, 6vw, 48px) 0; }
+  .btn { text-decoration: none; padding: clamp(11px, 2.5vw, 14px) clamp(18px, 4vw, 28px); border-radius: 8px; font-weight: 600; font-size: clamp(14px, 2.5vw, 16px); display: inline-block; }
+  .btn-outline { background: transparent; color: #1F2937; border: 1px solid #1F2937; }
+  nav { position: sticky; top: 0; background: #FAF8F5; border-bottom: 1px solid #E7E2D8; z-index: 20; }
+  nav .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: clamp(12px, 3vw, 20px) clamp(16px, 5vw, 24px); max-width: 1280px; gap: 12px; }
+  nav a { text-decoration: none; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; }
+  .kicker { font-size: clamp(13px, 2.2vw, 16px); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #B45309; margin-bottom: 8px; }
+  h1.page-title { font-size: clamp(26px, 5vw, 36px); line-height: 1.2; font-weight: 600; margin: 0 0 16px 0; }
+  .lede { font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: #33302C; margin: 0 0 12px 0; max-width: 760px; }
+  .doc-frame { border: 1px solid #E7E2D8; border-radius: 12px; overflow: hidden; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div style="font-weight: 700; font-size: clamp(16px, 3vw, 20px);">Derek Carttar</div>
+    <a href="index.html">← Back to Portfolio</a>
+  </div>
+</nav>
+
+<div class="wrap section">
+  <div class="kicker">API Documentation Sample</div>
+  <h1 class="page-title">Sample Club Management API</h1>
+  <p class="lede">I can't share the proprietary API docs I wrote at ABC Fitness, so this is an original sample specification I wrote for a fitness club management API, in the same domain, to demonstrate my API documentation process: clear endpoint summaries, complete parameter and schema descriptions, realistic examples, and documented error responses.</p>
+  <p class="lede" style="color: #6B7280; font-size: clamp(14px, 2.2vw, 16px);">Explore the endpoints below — click any of them to expand full request and response details.</p>
+
+  <div class="doc-frame">
+    <rapi-doc
+      id="api-sample-doc"
+      theme="light"
+      bg-color="#FAF8F5"
+      text-color="#1F2937"
+      primary-color="#B45309"
+      nav-bg-color="#1F2937"
+      nav-text-color="#D6D3CE"
+      nav-hover-bg-color="#33302C"
+      render-style="read"
+      schema-style="table"
+      show-header="false"
+      allow-authentication="false"
+      allow-server-selection="false"
+      allow-spec-file-load="false"
+      allow-spec-url-load="false"
+      show-method-in-nav-bar="as-colored-block"
+      style="height: 85vh; min-height: 500px; width: 100%; display: block;"
+    ></rapi-doc>
+  </div>
+
+  <div style="margin-top: 24px;">
+    <a href="index.html" class="btn btn-outline">← Back to Portfolio</a>
+  </div>
+</div>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/rapidoc/dist/rapidoc-min.js"></script>
+<script>
+const openApiSpec = {
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Sample Club Management API",
+    "version": "1.0.0",
+    "description": "An original sample specification written by Derek Carttar to demonstrate API documentation style and process. Not affiliated with any employer; all endpoints and data are illustrative."
+  },
+  "servers": [{ "url": "https://api.example-club.com/v1" }],
+  "paths": {
+    "/members": {
+      "get": {
+        "summary": "List members",
+        "description": "Returns a paginated list of club members. Use the status parameter to filter by membership status.",
+        "parameters": [
+          { "name": "status", "in": "query", "description": "Filter members by status.", "schema": { "type": "string", "enum": ["active", "paused", "cancelled"] } },
+          { "name": "page", "in": "query", "description": "Page number, starting at 1.", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "description": "Number of results per page (max 100).", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": { "description": "A paginated list of members.", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Member" } }, "page": { "type": "integer" }, "totalPages": { "type": "integer" } } }, "example": { "data": [{ "id": "mem_1001", "firstName": "Alex", "lastName": "Rivera", "status": "active", "joinDate": "2024-03-11" }], "page": 1, "totalPages": 5 } } } },
+          "401": { "description": "Missing or invalid API key." }
+        }
+      },
+      "post": {
+        "summary": "Create a member",
+        "description": "Creates a new member record. The email field must be unique across the club.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewMember" }, "example": { "firstName": "Jordan", "lastName": "Lee", "email": "jordan.lee@example.com" } } } },
+        "responses": {
+          "201": { "description": "Member created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Member" } } } },
+          "409": { "description": "A member with this email already exists." }
+        }
+      }
+    },
+    "/members/{memberId}": {
+      "get": {
+        "summary": "Get a member",
+        "description": "Returns the full profile for a single member, including current membership status.",
+        "parameters": [{ "name": "memberId", "in": "path", "required": true, "description": "Unique identifier of the member.", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Member found.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Member" } } } },
+          "404": { "description": "No member exists with this ID." }
+        }
+      },
+      "patch": {
+        "summary": "Update a member",
+        "description": "Partially updates a member's profile. Only include the fields you want to change.",
+        "parameters": [{ "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "firstName": { "type": "string" }, "lastName": { "type": "string" }, "status": { "type": "string", "enum": ["active", "paused", "cancelled"] } } } } } },
+        "responses": {
+          "200": { "description": "Member updated.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Member" } } } },
+          "404": { "description": "No member exists with this ID." }
+        }
+      }
+    },
+    "/classes": {
+      "get": {
+        "summary": "List upcoming classes",
+        "description": "Returns scheduled classes, soonest first. Use location to filter by club location.",
+        "parameters": [{ "name": "location", "in": "query", "description": "Club location code.", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "A list of upcoming classes.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ClassSession" } } } } }
+        }
+      }
+    },
+    "/classes/{classId}/checkins": {
+      "post": {
+        "summary": "Check in a member to a class",
+        "description": "Records attendance for a member at a specific class session. Returns a 409 if the class is already at capacity.",
+        "parameters": [{ "name": "classId", "in": "path", "required": true, "description": "Unique identifier of the class session.", "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["memberId"], "properties": { "memberId": { "type": "string" } } }, "example": { "memberId": "mem_1001" } } } },
+        "responses": {
+          "201": { "description": "Check-in recorded.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CheckIn" } } } },
+          "404": { "description": "Class or member not found." },
+          "409": { "description": "Class is at capacity." }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Unique member identifier." },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "status": { "type": "string", "enum": ["active", "paused", "cancelled"], "description": "Current membership status." },
+          "joinDate": { "type": "string", "format": "date" }
+        }
+      },
+      "NewMember": {
+        "type": "object",
+        "required": ["firstName", "lastName", "email"],
+        "properties": {
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        }
+      },
+      "ClassSession": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string", "example": "Sunrise Spin" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "capacity": { "type": "integer" },
+          "spotsRemaining": { "type": "integer" }
+        }
+      },
+      "CheckIn": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "memberId": { "type": "string" },
+          "classId": { "type": "string" },
+          "checkedInAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+};
+
+function initApiDocs() {
+  const el = document.getElementById('api-sample-doc');
+  if (!el) return;
+  try {
+    if (typeof el.loadSpec === 'function') {
+      el.loadSpec(openApiSpec);
+    } else {
+      const blob = new Blob([JSON.stringify(openApiSpec)], { type: 'application/json' });
+      el.setAttribute('spec-url', URL.createObjectURL(blob));
+    }
+  } catch (e) {
+    if (window.console && console.error) console.error('Could not load API spec into RapiDoc', e);
+  }
+}
+if (customElements.get('rapi-doc')) {
+  initApiDocs();
+} else {
+  window.addEventListener('DOMContentLoaded', () => {
+    const check = setInterval(() => {
+      if (customElements.get('rapi-doc')) {
+        clearInterval(check);
+        initApiDocs();
+      }
+    }, 50);
+  });
+}
+</script>
+</body>
+</html>
