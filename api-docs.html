@@ -38,8 +38,8 @@
 
 <div class="wrap section">
   <div class="kicker">API Documentation Sample</div>
-  <h1 class="page-title">Sample Club Management API</h1>
-  <p class="lede">I can't share the proprietary API docs I wrote at ABC Fitness, so this is an original sample specification I wrote for a fitness club management API, in the same domain, to demonstrate my API documentation process: clear endpoint summaries, complete parameter and schema descriptions, realistic examples, and documented error responses.</p>
+  <h1 class="page-title">Book Search &amp; Reading List API</h1>
+  <p class="lede">An independent sample specification I wrote and documented from scratch, built around the free, public <a href="https://openlibrary.org/developers/api" target="_blank" rel="noopener">Open Library API</a>. It's meant to demonstrate my API documentation process — clear endpoint summaries, complete parameter and schema descriptions, realistic examples, and documented error responses — on a project that's entirely my own, not tied to any employer's product.</p>
   <p class="lede" style="color: #6B7280; font-size: clamp(14px, 2.2vw, 16px);">Explore the endpoints below — click any of them to expand full request and response details.</p>
 
   <div class="doc-frame">
@@ -74,120 +74,111 @@
 const openApiSpec = {
   "openapi": "3.0.3",
   "info": {
-    "title": "Sample Club Management API",
+    "title": "Book Search & Reading List API",
     "version": "1.0.0",
-    "description": "An original sample specification written by Derek Carttar to demonstrate API documentation style and process. Not affiliated with any employer; all endpoints and data are illustrative."
+    "description": "An original sample specification written by Derek Carttar to demonstrate API documentation style and process. Wraps the free, public Open Library API to add search and a personal reading list on top of it. Not affiliated with any employer; this project is entirely independent."
   },
-  "servers": [{ "url": "https://api.example-club.com/v1" }],
+  "servers": [{ "url": "https://api.example-reading-list.com/v1" }],
   "paths": {
-    "/members": {
+    "/books/search": {
       "get": {
-        "summary": "List members",
-        "description": "Returns a paginated list of club members. Use the status parameter to filter by membership status.",
+        "summary": "Search for books",
+        "description": "Searches the Open Library catalog by title, author, or general query, and returns a normalized, paginated list of matching editions.",
         "parameters": [
-          { "name": "status", "in": "query", "description": "Filter members by status.", "schema": { "type": "string", "enum": ["active", "paused", "cancelled"] } },
+          { "name": "q", "in": "query", "required": true, "description": "Search text (title, author, or keywords).", "schema": { "type": "string" } },
           { "name": "page", "in": "query", "description": "Page number, starting at 1.", "schema": { "type": "integer", "default": 1 } },
-          { "name": "limit", "in": "query", "description": "Number of results per page (max 100).", "schema": { "type": "integer", "default": 20 } }
+          { "name": "limit", "in": "query", "description": "Number of results per page (max 50).", "schema": { "type": "integer", "default": 20 } }
         ],
         "responses": {
-          "200": { "description": "A paginated list of members.", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Member" } }, "page": { "type": "integer" }, "totalPages": { "type": "integer" } } }, "example": { "data": [{ "id": "mem_1001", "firstName": "Alex", "lastName": "Rivera", "status": "active", "joinDate": "2024-03-11" }], "page": 1, "totalPages": 5 } } } },
-          "401": { "description": "Missing or invalid API key." }
-        }
-      },
-      "post": {
-        "summary": "Create a member",
-        "description": "Creates a new member record. The email field must be unique across the club.",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewMember" }, "example": { "firstName": "Jordan", "lastName": "Lee", "email": "jordan.lee@example.com" } } } },
-        "responses": {
-          "201": { "description": "Member created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Member" } } } },
-          "409": { "description": "A member with this email already exists." }
+          "200": { "description": "A paginated list of matching books.", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } }, "page": { "type": "integer" }, "totalPages": { "type": "integer" } } }, "example": { "data": [{ "id": "OL45804W", "title": "Dune", "author": "Frank Herbert", "firstPublishYear": 1965, "coverUrl": "https://covers.openlibrary.org/b/id/168430-M.jpg" }], "page": 1, "totalPages": 3 } } } },
+          "400": { "description": "Missing or invalid query parameter." }
         }
       }
     },
-    "/members/{memberId}": {
+    "/books/{bookId}": {
       "get": {
-        "summary": "Get a member",
-        "description": "Returns the full profile for a single member, including current membership status.",
-        "parameters": [{ "name": "memberId", "in": "path", "required": true, "description": "Unique identifier of the member.", "schema": { "type": "string" } }],
+        "summary": "Get a book",
+        "description": "Returns full details for a single book, including subjects, description, and available editions.",
+        "parameters": [{ "name": "bookId", "in": "path", "required": true, "description": "Open Library work identifier (e.g. OL45804W).", "schema": { "type": "string" } }],
         "responses": {
-          "200": { "description": "Member found.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Member" } } } },
-          "404": { "description": "No member exists with this ID." }
+          "200": { "description": "Book found.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } },
+          "404": { "description": "No book exists with this ID." }
+        }
+      }
+    },
+    "/reading-list": {
+      "get": {
+        "summary": "List reading list entries",
+        "description": "Returns the caller's personal reading list. Use the status parameter to filter by reading status.",
+        "parameters": [
+          { "name": "status", "in": "query", "description": "Filter entries by status.", "schema": { "type": "string", "enum": ["want-to-read", "reading", "read"] } }
+        ],
+        "responses": {
+          "200": { "description": "A list of reading list entries.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ReadingListEntry" } } } } }
         }
       },
+      "post": {
+        "summary": "Add a book to the reading list",
+        "description": "Creates a new reading list entry for a book. Returns a 409 if the book is already on the list.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewReadingListEntry" }, "example": { "bookId": "OL45804W", "status": "want-to-read" } } } },
+        "responses": {
+          "201": { "description": "Entry created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReadingListEntry" } } } },
+          "409": { "description": "This book is already on the reading list." }
+        }
+      }
+    },
+    "/reading-list/{entryId}": {
       "patch": {
-        "summary": "Update a member",
-        "description": "Partially updates a member's profile. Only include the fields you want to change.",
-        "parameters": [{ "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "firstName": { "type": "string" }, "lastName": { "type": "string" }, "status": { "type": "string", "enum": ["active", "paused", "cancelled"] } } } } } },
+        "summary": "Update a reading list entry",
+        "description": "Partially updates a reading list entry, such as moving it from \"reading\" to \"read\" or updating page progress. Only include the fields you want to change.",
+        "parameters": [{ "name": "entryId", "in": "path", "required": true, "description": "Unique identifier of the reading list entry.", "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["want-to-read", "reading", "read"] }, "currentPage": { "type": "integer" }, "rating": { "type": "integer", "minimum": 1, "maximum": 5 } } } } } },
         "responses": {
-          "200": { "description": "Member updated.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Member" } } } },
-          "404": { "description": "No member exists with this ID." }
+          "200": { "description": "Entry updated.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReadingListEntry" } } } },
+          "404": { "description": "No reading list entry exists with this ID." }
         }
-      }
-    },
-    "/classes": {
-      "get": {
-        "summary": "List upcoming classes",
-        "description": "Returns scheduled classes, soonest first. Use location to filter by club location.",
-        "parameters": [{ "name": "location", "in": "query", "description": "Club location code.", "schema": { "type": "string" } }],
+      },
+      "delete": {
+        "summary": "Remove a reading list entry",
+        "description": "Removes a book from the reading list entirely.",
+        "parameters": [{ "name": "entryId", "in": "path", "required": true, "schema": { "type": "string" } }],
         "responses": {
-          "200": { "description": "A list of upcoming classes.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ClassSession" } } } } }
-        }
-      }
-    },
-    "/classes/{classId}/checkins": {
-      "post": {
-        "summary": "Check in a member to a class",
-        "description": "Records attendance for a member at a specific class session. Returns a 409 if the class is already at capacity.",
-        "parameters": [{ "name": "classId", "in": "path", "required": true, "description": "Unique identifier of the class session.", "schema": { "type": "string" } }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["memberId"], "properties": { "memberId": { "type": "string" } } }, "example": { "memberId": "mem_1001" } } } },
-        "responses": {
-          "201": { "description": "Check-in recorded.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CheckIn" } } } },
-          "404": { "description": "Class or member not found." },
-          "409": { "description": "Class is at capacity." }
+          "204": { "description": "Entry removed." },
+          "404": { "description": "No reading list entry exists with this ID." }
         }
       }
     }
   },
   "components": {
     "schemas": {
-      "Member": {
+      "Book": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "Unique member identifier." },
-          "firstName": { "type": "string" },
-          "lastName": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "status": { "type": "string", "enum": ["active", "paused", "cancelled"], "description": "Current membership status." },
-          "joinDate": { "type": "string", "format": "date" }
+          "id": { "type": "string", "description": "Open Library work identifier." },
+          "title": { "type": "string" },
+          "author": { "type": "string" },
+          "firstPublishYear": { "type": "integer" },
+          "coverUrl": { "type": "string", "format": "uri" },
+          "subjects": { "type": "array", "items": { "type": "string" } }
         }
       },
-      "NewMember": {
-        "type": "object",
-        "required": ["firstName", "lastName", "email"],
-        "properties": {
-          "firstName": { "type": "string" },
-          "lastName": { "type": "string" },
-          "email": { "type": "string", "format": "email" }
-        }
-      },
-      "ClassSession": {
+      "ReadingListEntry": {
         "type": "object",
         "properties": {
           "id": { "type": "string" },
-          "name": { "type": "string", "example": "Sunrise Spin" },
-          "startTime": { "type": "string", "format": "date-time" },
-          "capacity": { "type": "integer" },
-          "spotsRemaining": { "type": "integer" }
+          "bookId": { "type": "string" },
+          "status": { "type": "string", "enum": ["want-to-read", "reading", "read"] },
+          "currentPage": { "type": "integer" },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Optional 1-5 star rating, set once a book is marked read." },
+          "addedAt": { "type": "string", "format": "date-time" }
         }
       },
-      "CheckIn": {
+      "NewReadingListEntry": {
         "type": "object",
+        "required": ["bookId"],
         "properties": {
-          "id": { "type": "string" },
-          "memberId": { "type": "string" },
-          "classId": { "type": "string" },
-          "checkedInAt": { "type": "string", "format": "date-time" }
+          "bookId": { "type": "string" },
+          "status": { "type": "string", "enum": ["want-to-read", "reading", "read"], "default": "want-to-read" }
         }
       }
     }
