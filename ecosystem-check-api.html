@@ -162,14 +162,14 @@ const openApiSpec = {
   "tags": [
     { "name": "Ecosystem Check", "description": T("combined report for a point, assembled from several upstream sources") },
     { "name": "Locations", "description": T("saved places to watch: name, coordinates, and search radius") },
-    { "name": "Alerts", "description": T("rules that watch parameters at a saved location; stored but not evaluated in this demo") }
+    { "name": "Alerts", "description": T("rules that check parameters at a saved location. For this demo, these are stored but not evaluated.") }
   ],
   "paths": {
     "/ecosystem/check": {
       "get": {
         "tags": ["Ecosystem Check"],
         "summary": T("verb + resource (run an ecosystem check for a US point)"),
-        "description": T("purpose: One combined ecosystem report for a location in the United States. Uses United States customary measurements (miles, Fahrenheit). The radiusMiles parameter limits stations, gauges, quakes, and fires.A response of no_data indicates that the provider responded, but had no data for the requested location/time. A response of unavailable means that the provider couldn't be reached or otherwise couldn't provide data."),
+        "description": T("purpose: One combined ecosystem report for a location in the United States. Uses United States customary measurements (miles, Fahrenheit). The radiusMiles parameter limits which stations, gauges, quakes, and fire are included. A response of no_data indicates that the provider responded, but had no data for the requested location/time. A response of unavailable means that the provider couldn't be reached or otherwise couldn't provide data."),
         "parameters": [
           { "name": "lat", "in": "query", "required": true, "description": T("latitude in decimal degrees (WGS84), -90 to 90, with an example such as 34.7465; US coverage only, coordinates outside it return 422"), "schema": { "type": "number", "minimum": -90, "maximum": 90 } },
           { "name": "lon", "in": "query", "required": true, "description": T("longitude in decimal degrees (WGS84), -180 to 180, with an example such as -92.2896; US longitudes are negative; US coverage only"), "schema": { "type": "number", "minimum": -180, "maximum": 180 } },
@@ -177,10 +177,10 @@ const openApiSpec = {
           { "name": "include", "in": "query", "description": T("optional comma-separated categories (weather, air, water, hazards, wildlife); default is all five; unknown values return 400"), "style": "form", "explode": false, "schema": { "type": "array", "items": ref("Category") } }
         ],
         "responses": {
-          "200": ok(T("combined report with location, generatedAt, overallStatus, and one entry per source; remind readers that a 200 can still contain sources with status no_data or unavailable"),  ref("EcosystemReport")),
+          "200": ok(T("combined report with location, generatedAt, overallStatus, and one entry per source. A 200 can still contain sources with status no_data or unavailable"),  ref("EcosystemReport")),
           "400": err(T("missing or invalid lat, lon, or radiusMiles, or an unknown include category; details lists each problem field")),
           "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")), // outside US coverage
-          "429": err(T("rate limit exceeded; document the limit, the Retry-After header, and that upstream sources may also throttle requests")),
+          "429": err(T("rate limit exceeded; document the limit, the Retry-After header, and that sources may also throttle requests")),
           "502": err(T("every requested source failed (error code all_sources_failed); partial failures return 200 instead"))  // every source failed
         }
       }
@@ -196,7 +196,7 @@ const openApiSpec = {
       "post": {
         "tags": ["Locations"],
         "summary": T("verb + resource (create a saved location)"),
-        "description": T("create a saved location; names must be unique (409); coordinates must be inside the US (422); the response returns the server-generated id"),
+        "description": T("create a saved location. Names must be unique (409). Coordinates must be inside the US (422). The response returns the server-generated id"),
         "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationInput") } } }, // TODO: add "example"
         "responses": { "201": ok(T("the created location, including its server-generated id and timestamps"),  ref("Location")), "400": err(T("missing or invalid name, lat, lon, or radiusMiles, or a body that is not valid JSON; details lists each field")), "409": err(T("a location with this name already exists (names are compared case-insensitively)")), "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")) }
       }
@@ -205,14 +205,14 @@ const openApiSpec = {
       "get": {
         "tags": ["Locations"],
         "summary": T("verb + resource (fetch one saved location)"),
-        "description": T("fetch one location by id. Cover: the id format (for example loc_1) and the 404 for an unknown id"),
+        "description": T("fetch one location by id in the format loc_1. An unknown id returns a 404"),
         "parameters": [idParam("locationId")],
         "responses": { "200": ok(T("the requested location"),  ref("Location")), "404": err(T("no location exists with this id")) }
       },
       "put": {
         "tags": ["Locations"],
         "summary": T("verb + resource; signal that this replaces the whole location"),
-        "description": T("replace the whole location. Cover: name, lat, lon are required; an omitted radiusMiles resets to its default (15); id and createdAt are kept; 409 if the new name is taken; 422 if outside the US; contrast with PATCH"),
+       "description": T("Unlike PATCH location, PUT location replaces the current coordinates. name, lat, lon are required. Omitting radiusMiles resets the value to default (15) while id and createdAt are unchanged. 409 is returned if the name is already taken. 422 is returned if the coordinates are outside the US."),
         "parameters": [idParam("locationId")],
         "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationInput") } } }, // TODO: add "example"
         "responses": { "200": ok(T("the replaced location; id and createdAt are unchanged"),  ref("Location")), "400": err(T("a required field (name, lat, lon) is missing, a value is invalid, or the body is not valid JSON")), "404": err(T("no location exists with this id")), "409": err(T("another location already has this name")), "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")) }
@@ -220,7 +220,7 @@ const openApiSpec = {
       "patch": {
         "tags": ["Locations"],
         "summary": T("verb + resource; signal that this changes only the fields sent"),
-        "description": T("change only the fields sent. Cover: omitted fields keep their values; the body must contain at least one field (400 if empty); fields that are sent are validated like POST; contrast with PUT"),
+        "description": T("Unlike PUT location, PATCH location changes only the fields you include. Omitted fields are unchanged. The request body must contain at least one field or will return 400. The included fields are validated like POST, rather than PUT"),
         "parameters": [idParam("locationId")],
         "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationUpdate") } } }, // TODO: add "example"
         "responses": { "200": ok(T("the updated location with the changed fields applied"),  ref("Location")), "400": err(T("empty body, invalid JSON, or an invalid value in a field that was sent")), "404": err(T("no location exists with this id")), "409": err(T("the new name is already used by another location")), "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")) }
@@ -237,7 +237,7 @@ const openApiSpec = {
       "get": {
         "tags": ["Alerts"],
         "summary": T("verb + resource (list alerts)"),
-        "description": T("list alerts. Cover: optional locationId and status filters (active, paused, triggered), pagination, and the 400 for an invalid filter or paging value"),
+        "description": T("list all alerts. locationId and status filters (active, paused, triggered) are optional"),
         "parameters": pageParams.concat([
           { "name": "locationId", "in": "query", "description": T("filter to alerts that watch this saved location id"), "schema": { "type": "string" } },
           { "name": "status", "in": "query", "description": T("filter by alert status: active, paused, or triggered; other values return 400"), "schema": ref("AlertStatus") }
@@ -247,7 +247,7 @@ const openApiSpec = {
       "post": {
         "tags": ["Alerts"],
         "summary": T("verb + resource (create an alert)"),
-        "description": T("create an alert on a saved location; include an example with several parameter ranges; 404 = unknown locationId; 422 = rule failures; alerts are stored but not evaluated or sent in this demo"),
+        "description": T("create an alert for a saved location; include an example with several parameter ranges; 404 = unknown locationId; 422 = rule failures; alerts are stored but not evaluated or sent in this demo"),
         "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertInput") } } }, // TODO: add "example" with multiple parameter ranges
         "responses": { "201": ok(T("the created alert, including id, status, and lastTriggeredAt (null until it fires)"),  ref("Alert")), "400": err(T("missing or invalid locationId, conditions, match, delivery, cooldownMinutes, or status; each condition needs a parameter plus min, max, or both; details lists each field")), "404": err(T("locationId does not match a saved location")), "422": err(T("a rule failed after the body was parsed: min greater than max, unknown or duplicate parameter, webhook URL that is not https, or an invalid email address")) }
       }
@@ -256,14 +256,14 @@ const openApiSpec = {
       "get": {
         "tags": ["Alerts"],
         "summary": T("verb + resource (fetch one alert)"),
-        "description": T("fetch one alert. Cover: status and lastTriggeredAt (null until it fires)"),
+        "description": T("fetch a specified alert and include status and lastTriggeredAt value. Until the alert is triggered, lastTriggeredAt is null"),
         "parameters": [idParam("alertId")],
         "responses": { "200": ok(T("the requested alert"),  ref("Alert")), "404": err(T("no alert exists with this id")) }
       },
       "put": {
         "tags": ["Alerts"],
         "summary": T("verb + resource; signal that this replaces the whole alert"),
-        "description": T("replace the whole alert. Cover: locationId, conditions, and delivery are required; omitted optional fields reset to defaults (match all, cooldownMinutes 60, status active); which fields are kept (id, createdAt, lastTriggeredAt) and which are reset; contrast with PATCH"),
+        "description": T("replace the entire alert. locationId, conditions, and delivery are required. Omitted optional fields reset to defaults (match all, cooldownMinutes 60, and status active, respectively). id, createdAt, and lastTriggeredAt values are unchanged"),
         "parameters": [idParam("alertId")],
         "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertInput") } } }, // TODO: add "example"
         "responses": { "200": ok(T("the replaced alert; id, createdAt, and lastTriggeredAt are unchanged (confirm this is your rule)"),  ref("Alert")), "400": err(T("missing or invalid locationId, conditions, match, delivery, cooldownMinutes, or status; each condition needs a parameter plus min, max, or both; details lists each field")), "404": err(T("no alert exists with this id, or locationId does not match a saved location")), "422": err(T("a rule failed after the body was parsed: min greater than max, unknown or duplicate parameter, webhook URL that is not https, or an invalid email address")) }
@@ -271,7 +271,7 @@ const openApiSpec = {
       "patch": {
         "tags": ["Alerts"],
         "summary": T("verb + resource; signal that this changes only the fields sent"),
-        "description": T("change only the fields sent. Cover: conditions replaces the whole array while delivery merges field by field (state your rule and show an example); locationId cannot be changed (400); the body must contain at least one field"),
+        "description": T("change only the included fields. Must include one field conditions replaces the whole array, while delivery merges field by field. locationId cannot be changed (400); the body must contain at least one field"),
         "parameters": [idParam("alertId")],
         "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertUpdate") } } }, // TODO: add "example"
         "responses": { "200": ok(T("the updated alert with the changed fields applied"),  ref("Alert")), "400": err(T("empty body, invalid JSON, an invalid value in a field that was sent, or locationId included (it cannot be changed)")), "404": err(T("no alert exists with this id")), "422": err(T("a rule failed after the body was parsed: min greater than max, unknown or duplicate parameter, webhook URL that is not https, or an invalid email address")) }
@@ -324,7 +324,7 @@ const openApiSpec = {
         "properties": {
           "source": ref("Source"),
           "category": ref("Category"),
-          "status": { "type": "string", "enum": ["ok", "no_data", "unavailable"], "description": T("ok = usable data; no_data = the source answered but nothing nearby or recent; unavailable = the source failed, timed out, or is not enabled; say what a client should do for each") },
+          "status": { "type": "string", "enum": ["ok", "no_data", "unavailable"], "description": T("no_data indicates the source responded but nothing nearby or recent was found. Expand radiusMiles if needed. unavailable indicates the source failed, timed out, or is not enabled") },
           "observedAt": { "type": "string", "format": "date-time", "nullable": true, "description": T("when the upstream source made the observation (ISO 8601, UTC), not the request time; null when there is none") },
           "stationDistanceMiles": { "type": "number", "nullable": true, "description": T("miles from the requested point to the station, gauge, or event that supplied the data; null for modeled or grid data") },
           "readings": {
