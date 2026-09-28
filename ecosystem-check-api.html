@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Documentation Sample — Derek Carttar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; font-family: 'Source Sans 3', sans-serif; background: #FAF8F5; color: #1F2937; overflow-x: hidden; }
+  a { color: #B45309; }
+  a:hover { color: #8A3E09; }
+  h1, h2 { font-family: 'Source Sans 3', sans-serif; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 24px); }
+  .section { padding-top: clamp(28px, 6vw, 48px); padding-bottom: clamp(28px, 6vw, 48px); }
+  .btn { text-decoration: none; padding: clamp(11px, 2.5vw, 14px) clamp(18px, 4vw, 28px); border-radius: 8px; font-weight: 600; font-size: clamp(14px, 2.5vw, 16px); display: inline-block; }
+  .btn-outline { background: transparent; color: #1F2937; border: 1px solid #1F2937; }
+  nav { position: sticky; top: 0; background: #FAF8F5; border-bottom: 1px solid #E7E2D8; z-index: 20; }
+  nav .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: clamp(12px, 3vw, 20px) clamp(20px, 5vw, 24px); max-width: 1280px; gap: 12px; }
+  nav a { text-decoration: none; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; }
+  .kicker { font-size: clamp(13px, 2.2vw, 16px); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #B45309; margin-bottom: 8px; }
+  h1.page-title { font-size: clamp(26px, 5vw, 36px); line-height: 1.2; font-weight: 600; margin: 0 0 16px 0; }
+  .lede { font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: #33302C; margin: 0 0 12px 0; max-width: 760px; }
+  .doc-frame { border: 1px solid #E7E2D8; border-radius: 12px; overflow: hidden; margin-top: 24px; }
+  .hint { color: #6B7280; font-size: clamp(14px, 2.2vw, 16px); }
+  .nav-actions { display: flex; align-items: center; gap: 16px; }
+  .theme-toggle { font: inherit; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; background: transparent; border: 1px solid #1F2937; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .theme-toggle:focus-visible { outline: 2px solid #B45309; outline-offset: 2px; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  :root[data-theme="dark"] body { background: #1C1A17; color: #E7E2D8; }
+  :root[data-theme="dark"] a { color: #F59E0B; }
+  :root[data-theme="dark"] a:hover { color: #FBBF24; }
+  :root[data-theme="dark"] nav { background: #1C1A17; border-bottom-color: #33302C; }
+  :root[data-theme="dark"] nav a { color: #E7E2D8; }
+  :root[data-theme="dark"] .kicker { color: #F59E0B; }
+  :root[data-theme="dark"] .lede { color: #D6D3CE; }
+  :root[data-theme="dark"] .hint { color: #A8A29E; }
+  :root[data-theme="dark"] .btn-outline { color: #E7E2D8; border-color: #E7E2D8; }
+  :root[data-theme="dark"] .theme-toggle { color: #E7E2D8; border-color: #E7E2D8; }
+  :root[data-theme="dark"] .doc-frame { border-color: #33302C; }
+  .demo-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 24px; font-size: clamp(14px, 2.2vw, 16px); font-weight: 600; }
+  .demo-bar select { font: inherit; font-weight: 500; color: #1F2937; background: #FFFFFF; border: 1px solid #C9C3B8; border-radius: 8px; padding: 6px 10px; max-width: 100%; }
+  :root[data-theme="dark"] .demo-bar select { color: #E7E2D8; background: #262320; border-color: #4A453F; }
+  .demo-bar + .doc-frame { margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div style="font-weight: 700; font-size: clamp(16px, 3vw, 20px);">Derek Carttar</div>
+    <div class="nav-actions">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">Dark mode</button>
+      <a href="api-docs.html">← Back to API Docs</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap section">
+  <div class="kicker">API Documentation Sample</div>
+  <h1 class="page-title">Ecosystem Check API</h1>
+  <p>  This API returns localized (U.S. only) environmental information including weather, sir and water quality, hazards, and wildlife. This data is retrieved from NWS, Open-Meteo Air Quality, USGS, EPA, NASA FIRMS, and iNaturalist.</p>
+  <p class="lede">This is an independent project that aggregates information from several sources.</p>
+  
+  <p class="lede hint">Click an endpoint to expand it and see more information.</p>
+  <p class="lede hint">No key is needed. The ecosystem check calls live NWS, Open-Meteo, USGS, and iNaturalist data. When a call to a source fails, sample data will be returned instead. (switch to Live only to see those failures).</p>
+
+  <div class="demo-bar">
+    <label for="sample-place">Sample location for Try it:</label>
+    <select id="sample-place"></select>
+    <label for="data-mode">Data:</label>
+    <select id="data-mode">
+      <option value="auto">Live, sample fallback</option>
+      <option value="live">Live only</option>
+      <option value="sample">Sample only</option>
+    </select>
+  </div>
+
+  <div class="doc-frame">
+    <rapi-doc
+      id="api-sample-doc"
+      theme="light"
+      bg-color="#FAF8F5"
+      text-color="#1F2937"
+      primary-color="#B45309"
+      nav-bg-color="#1F2937"
+      nav-text-color="#D6D3CE"
+      nav-hover-bg-color="#33302C"
+      render-style="read"
+      schema-style="table"
+      show-header="false"
+      allow-try="true"
+      fill-request-fields-with-example="true"
+      allow-authentication="false"
+      allow-server-selection="false"
+      allow-spec-file-load="false"
+      allow-spec-url-load="false"
+      show-method-in-nav-bar="as-colored-block"
+      style="height: 85vh; min-height: 500px; width: 100%; display: block;"
+    ></rapi-doc>
+  </div>
+
+  <div style="margin-top: 24px;">
+    <a href="api-docs.html" class="btn btn-outline">← Back to API Docs</a>
+  </div>
+</div>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/rapidoc/dist/rapidoc-min.js"></script>
+<script>
+
+const T = (note) => note ? "TODO - " + note : "TODO";
+
+const err = (desc) => ({
+  "description": desc,
+  "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+});
+const ok = (desc, schema) => ({
+  "description": desc,
+  "content": { "application/json": { "schema": schema } } // TODO: add "example"
+});
+const ref = (n) => ({ "$ref": "#/components/schemas/" + n });
+const page = (item) => ({
+  "type": "object",
+  "properties": {
+    "data": { "type": "array", "items": ref(item) },
+    "page": { "type": "integer", "description": T("current page number") },
+    "totalPages": { "type": "integer", "description": T("total number of pages") }
+  }
+});
+const pageParams = [
+  { "name": "page", "in": "query", "description": T("page number, starting at 1"), "schema": { "type": "integer", "default": 1 } },
+  { "name": "limit", "in": "query", "description": T("results per page; default and maximum"), "schema": { "type": "integer", "default": 20, "maximum": 100 } }
+];
+const idParam = (name) => ({ "name": name, "in": "path", "required": true, "description": T("unique ID returned when the resource was created"), "schema": { "type": "string" } });
+
+const openApiSpec = {
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Ecosystem Check API",
+    "version": "1.0.0",
+    "description": T("overview; US-only coverage using NWS (api.weather.gov), Open-Meteo Air Quality, USGS Water Services and EPA Water Quality Portal, USGS Earthquake Catalog and NASA FIRMS, and iNaturalist.partial results; units (miles, °F); auth; independent-sample disclaimer; note that Try it runs against an in-browser demo")
+  },
+  "servers": [{ "url": "https://api.example-ecosystem-check.com/v1" }],
+  "security": [{ "ApiKeyAuth": [] }],
+  "tags": [
+    { "name": "Ecosystem Check", "description": T("combined environmental report for a point or saved location") },
+    { "name": "Locations", "description": T("saved places to watch; full (PUT) and partial (PATCH) updates") },
+    { "name": "Alerts", "description": T("threshold rules over one or more parameters; notification delivery") }
+  ],
+  "paths": {
+    "/ecosystem/check": {
+      "get": {
+        "tags": ["Ecosystem Check"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("fans out to the upstream sources (NWS (api.weather.gov) = weather; Open-Meteo Air Quality = air quality; USGS Water Services + EPA Water Quality Portal = water; USGS Earthquake Catalog + NASA FIRMS = hazards; iNaturalist = wildlife); explain radius search, partial results, per-source status, US-only coverage, and unit conversion to miles/°F"), // TODO: explain partial results and per-source status
+        "parameters": [
+          { "name": "lat", "in": "query", "required": true, "description": T("decimal degrees (WGS84), -90 to 90; US coverage only"), "schema": { "type": "number", "minimum": -90, "maximum": 90 } },
+          { "name": "lon", "in": "query", "required": true, "description": T("decimal degrees (WGS84), -180 to 180; US coverage only"), "schema": { "type": "number", "minimum": -180, "maximum": 180 } },
+          { "name": "radiusMiles", "in": "query", "description": T("search radius in miles around the point for stations, gauges, quakes, fires; upstream sources use km internally, converted to miles"), "schema": { "type": "number", "default": 15, "minimum": 1, "maximum": 60 } },
+          { "name": "include", "in": "query", "description": T("comma-separated categories to query (weather, air, water, hazards, wildlife); default is all"), "style": "form", "explode": false, "schema": { "type": "array", "items": ref("Category") } }
+        ],
+        "responses": {
+          "200": ok(T("combined report; note that 200 can include sources with status no_data/unavailable/out_of_coverage"),  ref("EcosystemReport")),
+          "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")),
+          "401": err(T("missing or invalid API key")),
+          "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")), // outside US coverage
+          "429": err(T("rate limit exceeded; mention Retry-After; upstream rate limits may also apply")),
+          "502": err(T("every upstream source failed (partial failures return 200 instead)"))  // every source failed
+        }
+      }
+    },
+    "/locations": {
+      "get": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("list saved locations; pagination; ordering"),
+        "parameters": pageParams,
+        "responses": { "200": ok(T("successful response; describe the returned object"),  page("Location")), "401": err(T("missing or invalid API key")) }
+      },
+      "post": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("save a location to watch; name uniqueness (409); US coordinates only (422)"),
+        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationInput") } } }, // TODO: add "example"
+        "responses": { "201": ok(T("created; describe the returned object"),  ref("Location")), "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")), "401": err(T("missing or invalid API key")), "409": err(T("conflict (e.g. duplicate location name, or location still has alerts)")), "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")) }
+      }
+    },
+    "/locations/{locationId}": {
+      "get": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("fetch one saved location"),
+        "parameters": [idParam("locationId")],
+        "responses": { "200": ok(T("successful response; describe the returned object"),  ref("Location")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")) }
+      },
+      "put": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("full replacement: all required fields must be sent; omitted optional fields reset to defaults"), // TODO: full replacement; all required fields must be sent, omitted optional fields reset to defaults
+        "parameters": [idParam("locationId")],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationInput") } } }, // TODO: add "example"
+        "responses": { "200": ok(T("successful response; describe the returned object"),  ref("Location")), "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")) }
+      },
+      "patch": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("partial update: include only the fields to change; omitted fields are unchanged; at least one field required"), // TODO: partial update; include only the fields to change, omitted fields are unchanged
+        "parameters": [idParam("locationId")],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationUpdate") } } }, // TODO: add "example"
+        "responses": { "200": ok(T("successful response; describe the returned object"),  ref("Location")), "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")) }
+      },
+      "delete": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("what happens to alerts on this location (blocked with 409, or deleted with it?)"), // TODO: explain what happens to alerts on this location
+        "parameters": [idParam("locationId")],
+        "responses": { "204": { "description": T("deleted; no response body") }, "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "409": err(T("conflict (e.g. duplicate location name, or location still has alerts)")) }
+      }
+    },
+    "/locations/{locationId}/check": {
+      "get": {
+        "tags": ["Locations"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("same report as GET /ecosystem/check, using the saved lat/lon/radius"),
+        "parameters": [idParam("locationId")],
+        "responses": { "200": ok(T("combined report for the saved location"),  ref("EcosystemReport")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "429": err(T("rate limit exceeded; mention Retry-After; upstream rate limits may also apply")), "502": err(T("every upstream source failed (partial failures return 200 instead)")) }
+      }
+    },
+    "/alerts": {
+      "get": {
+        "tags": ["Alerts"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("list alerts; filter by locationId and status; pagination"),
+        "parameters": pageParams.concat([
+          { "name": "locationId", "in": "query", "description": T("filter to alerts for this saved location"), "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "description": T("filter by alert status"), "schema": ref("AlertStatus") }
+        ]),
+        "responses": { "200": ok(T("successful response; describe the returned object"),  page("Alert")), "401": err(T("missing or invalid API key")) }
+      },
+      "post": {
+        "tags": ["Alerts"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("create an alert; conditions is a list of parameter ranges (min/max) evaluated against readings; match = all or any; delivery by webhook or email; show an example with several parameters"), // TODO: explain multi-condition ranges and the match mode
+        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertInput") } } }, // TODO: add "example" with multiple parameter ranges
+        "responses": { "201": ok(T("created; describe the returned object"),  ref("Alert")), "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")) }
+      }
+    },
+    "/alerts/{alertId}": {
+      "get": {
+        "tags": ["Alerts"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("fetch one alert including status and lastTriggeredAt"),
+        "parameters": [idParam("alertId")],
+        "responses": { "200": ok(T("successful response; describe the returned object"),  ref("Alert")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")) }
+      },
+      "put": {
+        "tags": ["Alerts"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("full replacement; what happens to omitted optional fields and to lastTriggeredAt"), // TODO: full replacement; explain what happens to omitted optional fields and to lastTriggeredAt
+        "parameters": [idParam("alertId")],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertInput") } } }, // TODO: add "example"
+        "responses": { "200": ok(T("successful response; describe the returned object"),  ref("Alert")), "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")) }
+      },
+      "patch": {
+        "tags": ["Alerts"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("partial update; omitted fields unchanged; whether conditions replaces the whole array or merges; locationId not changeable (if that is your rule)"), // TODO: partial update; omitted fields are unchanged. Explain whether "conditions" replaces the whole array
+        "parameters": [idParam("alertId")],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertUpdate") } } }, // TODO: add "example"
+        "responses": { "200": ok(T("successful response; describe the returned object"),  ref("Alert")), "400": err(T("malformed or invalid parameters/body; describe the details[] field errors")), "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")), "422": err(T("valid syntax but rejected (e.g. coordinates outside US coverage, min greater than max, unknown parameter)")) }
+      },
+      "delete": {
+        "tags": ["Alerts"],
+        "summary": T("one-line summary (verb + resource)"),
+        "description": T("permanent delete; stops all future notifications"),
+        "parameters": [idParam("alertId")],
+        "responses": { "204": { "description": T("deleted; no response body") }, "401": err(T("missing or invalid API key")), "404": err(T("no resource with this ID")) }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "X-API-Key", "description": T("tag description") }
+    },
+    "schemas": {
+      "Category": { "type": "string", "enum": ["weather", "air", "water", "hazards", "wildlife"], "description": T("how categories map to sources: weather = NWS; air = Open-Meteo Air Quality; water = USGS Water Services + EPA WQP; hazards = USGS Earthquake Catalog + NASA FIRMS; wildlife = iNaturalist") },
+      "Source": { "type": "string", "enum": ["nws", "open-meteo", "usgs-water", "epa-wqp", "usgs-earthquakes", "nasa-firms", "inaturalist"], "description": T("upstream provider ID; nws = api.weather.gov, open-meteo = Open-Meteo Air Quality API, usgs-water = USGS Water Services, epa-wqp = EPA Water Quality Portal, usgs-earthquakes = USGS Earthquake Catalog, nasa-firms = NASA FIRMS, inaturalist = iNaturalist API") },
+      "AlertStatus": { "type": "string", "enum": ["active", "paused", "triggered"], "description": T("define active / paused / triggered") },
+      "AlertParameter": {
+        "type": "string",
+        "enum": [
+          "temperature_f", "wind_speed_mph", "precipitation_probability_pct",
+          "aqi", "pm25_ugm3",
+          "streamflow_cfs", "gage_height_ft", "water_temp_f",
+          "earthquake_magnitude", "fire_distance_miles"
+        ],
+        "description": T("unit and source per parameter: temperature_f, wind_speed_mph, precipitation_probability_pct (NWS, converted to °F/mph); aqi, pm25_ugm3 (Open-Meteo Air Quality); streamflow_cfs, gage_height_ft, water_temp_f (USGS Water Services, water temp converted to °F); earthquake_magnitude (USGS); fire_distance_miles (NASA FIRMS, distance computed); wildlife has no alertable parameter") // TODO: document the unit each parameter uses
+      },
+      "EcosystemReport": {
+        "type": "object",
+        "properties": {
+          "location": ref("Coordinates"),
+          "generatedAt": { "type": "string", "format": "date-time", "description": T("when this report was assembled (ISO 8601, UTC); not the same as observedAt") },
+          "overallStatus": { "type": "string", "enum": ["normal", "watch", "warning"], "description": T("how normal/watch/warning is derived; state your rules and thresholds") },
+          "sources": { "type": "array", "items": ref("SourceReading"), "description": T("one entry per upstream source queried") }
+        }
+      },
+      "Coordinates": {
+        "type": "object",
+        "properties": {
+          "lat": { "type": "number", "description": T("decimal degrees (WGS84)") },
+          "lon": { "type": "number", "description": T("decimal degrees (WGS84)") }
+        }
+      },
+      "SourceReading": {
+        "type": "object",
+        "properties": {
+          "source": ref("Source"),
+          "category": ref("Category"),
+          "status": { "type": "string", "enum": ["ok", "no_data", "unavailable", "out_of_coverage"], "description": T("ok / no_data (no nearby station or gauge) / unavailable (upstream error or timeout) / out_of_coverage") },
+          "observedAt": { "type": "string", "format": "date-time", "nullable": true, "description": T("timestamp of the upstream observation, not the request time (ISO 8601, UTC); null if none") },
+          "stationDistanceMiles": { "type": "number", "nullable": true, "description": T("distance from the requested point to the station, gauge, or event that supplied the data; converted to miles") },
+          "readings": {
+            "type": "array",
+            "description": T("individual measurements from this source"),
+            "items": {
+              "type": "object",
+              "properties": {
+                "parameter": ref("AlertParameter"),
+                "value": { "type": "number", "description": T("measured value in the unit given") },
+                "unit": { "type": "string", "description": T("unit of the value (°F, mph, cfs, ft, µg/m³, etc.)") }
+              }
+            }
+          },
+          "message": { "type": "string", "nullable": true, "description": T("human-readable detail when status is not ok") }
+        }
+      },
+      "LocationInput": {
+        "type": "object",
+        "required": ["name", "lat", "lon"],
+        "properties": {
+          "name": { "type": "string", "description": T("display name for the resource") },
+          "lat": { "type": "number", "minimum": -90, "maximum": 90, "description": T("decimal degrees (WGS84)") },
+          "lon": { "type": "number", "minimum": -180, "maximum": 180, "description": T("decimal degrees (WGS84)") },
+          "radiusMiles": { "type": "number", "default": 15, "minimum": 1, "maximum": 60, "description": T("search radius in miles; default and range") }
+        }
+      },
+      "LocationUpdate": {
+        "type": "object",
+        "minProperties": 1,
+        "description": T("partial update body; include only the fields to change; at least one field required"),
+        "properties": {
+          "name": { "type": "string", "description": T("display name for the resource") },
+          "lat": { "type": "number", "minimum": -90, "maximum": 90, "description": T("decimal degrees (WGS84)") },
+          "lon": { "type": "number", "minimum": -180, "maximum": 180, "description": T("decimal degrees (WGS84)") },
+          "radiusMiles": { "type": "number", "minimum": 1, "maximum": 60, "description": T("search radius in miles; default and range") }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": T("server-generated unique ID") },
+          "name": { "type": "string", "description": T("display name for the resource") },
+          "lat": { "type": "number", "description": T("decimal degrees (WGS84)") },
+          "lon": { "type": "number", "description": T("decimal degrees (WGS84)") },
+          "radiusMiles": { "type": "number", "description": T("search radius in miles; default and range") },
+          "createdAt": { "type": "string", "format": "date-time", "description": T("when the resource was created (ISO 8601, UTC)") },
+          "updatedAt": { "type": "string", "format": "date-time", "description": T("when the resource was last changed (ISO 8601, UTC)") }
+        }
+      },
+      "AlertCondition": {
+        "type": "object",
+        "description": T("one parameter range (min and/or max)"),
+        "required": ["parameter"],
+        "anyOf": [{ "required": ["min"] }, { "required": ["max"] }],
+        "properties": {
+          "parameter": ref("AlertParameter"),
+          "min": { "type": "number", "description": T("lower bound, inclusive; unit follows the parameter; at least one of min/max required") },
+          "max": { "type": "number", "description": T("upper bound, inclusive; unit follows the parameter; at least one of min/max required") }
+        }
+      },
+      "AlertInput": {
+        "type": "object",
+        "required": ["locationId", "conditions", "delivery"],
+        "properties": {
+          "locationId": { "type": "string", "description": T("ID of the saved location this alert watches") },
+          "name": { "type": "string", "description": T("display name for the resource") },
+          "conditions": { "type": "array", "minItems": 1, "maxItems": 10, "items": ref("AlertCondition"), "description": T("list of parameter ranges; explain how ranges combine with match; limit of 10") },
+          "match": { "type": "string", "enum": ["all", "any"], "default": "all", "description": T("all = every condition must be met; any = at least one") },
+          "delivery": {
+            "type": "object",
+            "required": ["type", "target"],
+            "description": T("where to send the notification"),
+            "properties": {
+              "type": { "type": "string", "enum": ["webhook", "email"], "description": T("delivery method: webhook or email") },
+              "target": { "type": "string", "description": T("webhook URL or email address") }
+            }
+          },
+          "cooldownMinutes": { "type": "integer", "minimum": 5, "default": 60, "description": T("minimum minutes between repeat notifications; default and minimum") },
+          "status": { "type": "string", "enum": ["active", "paused"], "default": "active", "description": T("active or paused") }
+        }
+      },
+      "AlertUpdate": {
+        "type": "object",
+        "minProperties": 1,
+        "description": T("partial update body; include only the fields to change; at least one field required; locationId not changeable"),
+        "properties": {
+          "name": { "type": "string", "description": T("display name for the resource") },
+          "conditions": { "type": "array", "minItems": 1, "maxItems": 10, "items": ref("AlertCondition"), "description": T("list of parameter ranges; explain how ranges combine with match; limit of 10") },
+          "match": { "type": "string", "enum": ["all", "any"], "description": T("all = every condition must be met; any = at least one") },
+          "delivery": {
+            "type": "object",
+            "description": T("where to send the notification"),
+            "properties": {
+              "type": { "type": "string", "enum": ["webhook", "email"], "description": T("delivery method: webhook or email") },
+              "target": { "type": "string", "description": T("webhook URL or email address") }
+            }
+          },
+          "cooldownMinutes": { "type": "integer", "minimum": 5, "description": T("minimum minutes between repeat notifications; default and minimum") },
+          "status": { "type": "string", "enum": ["active", "paused"], "description": T("active or paused") }
+        }
+      },
+      "Alert": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": T("server-generated unique ID") },
+          "locationId": { "type": "string", "description": T("ID of the saved location this alert watches") },
+          "name": { "type": "string", "description": T("display name for the resource") },
+          "conditions": { "type": "array", "items": ref("AlertCondition"), "description": T("list of parameter ranges; explain how ranges combine with match; limit of 10") },
+          "match": { "type": "string", "enum": ["all", "any"], "description": T("all = every condition must be met; any = at least one") },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["webhook", "email"] },
+              "target": { "type": "string" }
+            }
+          },
+          "cooldownMinutes": { "type": "integer", "description": T("minimum minutes between repeat notifications; default and minimum") },
+          "status": ref("AlertStatus"),
+          "lastTriggeredAt": { "type": "string", "format": "date-time", "nullable": true, "description": T("when this alert last fired; null if never") },
+          "createdAt": { "type": "string", "format": "date-time", "description": T("when the resource was created (ISO 8601, UTC)") },
+          "updatedAt": { "type": "string", "format": "date-time", "description": T("when the resource was last changed (ISO 8601, UTC)") }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "description": T("machine-readable error code; list the codes") },
+          "message": { "type": "string", "description": T("human-readable detail when status is not ok") },
+          "details": {
+            "type": "array",
+            "description": T("field-level validation errors"),
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string" },
+                "issue": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+
+// ---- Light / dark theme ----
+const rapidocThemes = {
+  light: { "theme": "light", "bg-color": "#FAF8F5", "text-color": "#1F2937", "primary-color": "#B45309", "nav-bg-color": "#1F2937", "nav-text-color": "#D6D3CE", "nav-hover-bg-color": "#33302C" },
+  dark:  { "theme": "dark",  "bg-color": "#1C1A17", "text-color": "#E7E2D8", "primary-color": "#F59E0B", "nav-bg-color": "#0F0E0C", "nav-text-color": "#D6D3CE", "nav-hover-bg-color": "#33302C" }
+};
+
+function applyTheme(name) {
+  document.documentElement.setAttribute('data-theme', name);
+  const el = document.getElementById('api-sample-doc');
+  if (el) {
+    Object.entries(rapidocThemes[name]).forEach(([k, v]) => el.setAttribute(k, v));
+  }
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    btn.textContent = name === 'dark' ? 'Light mode' : 'Dark mode';
+    btn.setAttribute('aria-pressed', name === 'dark' ? 'true' : 'false');
+  }
+}
+
+function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+  });
+}
+initTheme();
+
+// ---- In-browser mock server: makes "Try it" work without a backend ----
+// Locations and alerts live in memory and reset on page reload. Alerts are stored but never evaluated or delivered.
+// GET /ecosystem/check calls live public APIs (NWS, Open-Meteo air quality, USGS Water Services, USGS Earthquakes, iNaturalist)
+// straight from the browser. EPA WQP and NASA FIRMS are not wired up. In the default "auto" data mode, any source that can't be
+// reached (or isn't wired up) returns clearly labeled sample data instead of failing.
+const MOCK_BASE = 'https://api.example-ecosystem-check.com/v1';
+// Some preview frames replace `console` with a partial shim, so never call console methods directly.
+function safeLog(msg, detail) {
+  try { const c = window.console; const fn = c && (c.log || c.warn || c.error); if (typeof fn === 'function') fn.call(c, msg, detail === undefined ? '' : detail); } catch (e) { /* ignore */ }
+}
+safeLog('[ecosystem check] demo build 2026-09-28d');
+const realFetch = window.fetch.bind(window);
+const KM_PER_MILE = 1.609344;
+const CATEGORY_SOURCES = {
+  weather: ['nws'], air: ['open-meteo'], water: ['usgs-water', 'epa-wqp'],
+  hazards: ['usgs-earthquakes', 'nasa-firms'], wildlife: ['inaturalist']
+};
+const ALERT_PARAMS = [
+  'temperature_f', 'wind_speed_mph', 'precipitation_probability_pct', 'aqi', 'pm25_ugm3',
+  'streamflow_cfs', 'gage_height_ft', 'water_temp_f', 'earthquake_magnitude', 'fire_distance_miles'
+];
+// Rough US bounding boxes (contiguous, Alaska, Hawaii, Puerto Rico). Approximate: edges include a little of Canada/Mexico.
+const US_BOXES = [
+  { s: 24.4, n: 49.5, w: -125.0, e: -66.9 }, { s: 51.0, n: 71.6, w: -170.0, e: -129.0 },
+  { s: 18.8, n: 22.4, w: -160.6, e: -154.7 }, { s: 17.8, n: 18.6, w: -67.4, e: -65.1 }
+];
+const inUS = (lat, lon) => US_BOXES.some(b => lat >= b.s && lat <= b.n && lon >= b.w && lon <= b.e);
+
+const nowIso = () => new Date().toISOString();
+const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+const round = (n, d = 1) => Math.round(n * Math.pow(10, d)) / Math.pow(10, d);
+const toRad = (d) => d * Math.PI / 180;
+function miles(lat1, lon1, lat2, lon2) {
+  const a = Math.sin(toRad(lat2 - lat1) / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(toRad(lon2 - lon1) / 2) ** 2;
+  return 3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+const db = { seq: { loc: 1, alert: 1 }, locations: [], alerts: [] };
+(function seed() {
+  const t = nowIso();
+  db.locations.push({ id: 'loc_' + db.seq.loc++, name: 'Little Rock, AR', lat: 34.7465, lon: -92.2896, radiusMiles: 15, createdAt: t, updatedAt: t });
+  db.alerts.push({
+    id: 'alert_' + db.seq.alert++, locationId: 'loc_1', name: 'Sample alert',
+    conditions: [{ parameter: 'temperature_f', max: 20 }, { parameter: 'wind_speed_mph', min: 25 }],
+    match: 'any', delivery: { type: 'email', target: 'you@example.com' }, cooldownMinutes: 60,
+    status: 'active', lastTriggeredAt: null, createdAt: t, updatedAt: t
+  });
+})();
+
+const jsonRes = (status, body) => new Response(status === 204 ? null : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+const fail = (status, code, message, details) => jsonRes(status, Object.assign({ code, message }, details && details.length ? { details } : {}));
+const bad = (details) => fail(400, 'validation_error', 'The request is invalid.', details);
+const unprocessable = (details) => fail(422, 'unprocessable', 'The request was understood but cannot be processed.', details);
+const notFound = (what) => fail(404, 'not_found', 'No ' + what + ' exists with this ID.');
+
+function paginate(items, q) {
+  const d = [];
+  let page = 1, limit = 20;
+  if (q.get('page') !== null) { page = Number(q.get('page')); if (!Number.isInteger(page) || page < 1) d.push({ field: 'page', issue: 'must be an integer of 1 or more' }); }
+  if (q.get('limit') !== null) { limit = Number(q.get('limit')); if (!Number.isInteger(limit) || limit < 1 || limit > 100) d.push({ field: 'limit', issue: 'must be an integer from 1 to 100' }); }
+  if (d.length) return { error: bad(d) };
+  const totalPages = Math.max(1, Math.ceil(items.length / limit));
+  return { body: { data: items.slice((page - 1) * limit, page * limit), page, totalPages } };
+}
+
+function parseBody(text) {
+  if (!text || !text.trim()) return { error: fail(400, 'invalid_json', 'A JSON request body is required.') };
+  try {
+    const b = JSON.parse(text);
+    if (!b || typeof b !== 'object' || Array.isArray(b)) throw new Error('not an object');
+    return { body: b };
+  } catch (e) { return { error: fail(400, 'invalid_json', 'The request body is not a valid JSON object.') }; }
+}
+
+// ---- Locations ----
+function locationIssues(b, requireAll) {
+  const d = [], has = (k) => b[k] !== undefined;
+  if (requireAll) ['name', 'lat', 'lon'].forEach(k => { if (!has(k)) d.push({ field: k, issue: 'required' }); });
+  if (has('name') && (typeof b.name !== 'string' || !b.name.trim())) d.push({ field: 'name', issue: 'must be a non-empty string' });
+  if (has('lat') && (!isNum(b.lat) || b.lat < -90 || b.lat > 90)) d.push({ field: 'lat', issue: 'must be a number from -90 to 90' });
+  if (has('lon') && (!isNum(b.lon) || b.lon < -180 || b.lon > 180)) d.push({ field: 'lon', issue: 'must be a number from -180 to 180' });
+  if (has('radiusMiles') && (!isNum(b.radiusMiles) || b.radiusMiles < 1 || b.radiusMiles > 60)) d.push({ field: 'radiusMiles', issue: 'must be a number from 1 to 60' });
+  return d;
+}
+const outsideUS = () => fail(422, 'out_of_coverage', 'Coordinates are outside US coverage.', [{ field: 'lat/lon', issue: 'must be within the United States' }]);
+const nameTaken = (name, exceptId) => db.locations.some(l => l.id !== exceptId && l.name.toLowerCase() === name.trim().toLowerCase());
+const dupName = () => fail(409, 'conflict', 'A location with this name already exists.');
+
+function createLocation(text) {
+  const p = parseBody(text); if (p.error) return p.error;
+  const b = p.body, d = locationIssues(b, true); if (d.length) return bad(d);
+  if (!inUS(b.lat, b.lon)) return outsideUS();
+  if (nameTaken(b.name)) return dupName();
+  const t = nowIso();
+  const loc = { id: 'loc_' + db.seq.loc++, name: b.name.trim(), lat: b.lat, lon: b.lon, radiusMiles: b.radiusMiles === undefined ? 15 : b.radiusMiles, createdAt: t, updatedAt: t };
+  db.locations.push(loc);
+  return jsonRes(201, loc);
+}
+function replaceLocation(loc, text) {
+  const p = parseBody(text); if (p.error) return p.error;
+  const b = p.body, d = locationIssues(b, true); if (d.length) return bad(d);
+  if (!inUS(b.lat, b.lon)) return outsideUS();
+  if (nameTaken(b.name, loc.id)) return dupName();
+  Object.assign(loc, { name: b.name.trim(), lat: b.lat, lon: b.lon, radiusMiles: b.radiusMiles === undefined ? 15 : b.radiusMiles, updatedAt: nowIso() });
+  return jsonRes(200, loc);
+}
+function patchLocation(loc, text) {
+  const p = parseBody(text); if (p.error) return p.error;
+  const b = p.body, fields = ['name', 'lat', 'lon', 'radiusMiles'].filter(k => b[k] !== undefined);
+  if (!fields.length) return bad([{ field: '(body)', issue: 'include at least one field to change' }]);
+  const d = locationIssues(b, false); if (d.length) return bad(d);
+  const merged = Object.assign({}, loc, b);
+  if (!inUS(merged.lat, merged.lon)) return outsideUS();
+  if (b.name !== undefined && nameTaken(b.name, loc.id)) return dupName();
+  fields.forEach(k => { loc[k] = k === 'name' ? b.name.trim() : b[k]; });
+  loc.updatedAt = nowIso();
+  return jsonRes(200, loc);
+}
+function deleteLocation(loc) {
+  if (db.alerts.some(a => a.locationId === loc.id)) return fail(409, 'conflict', 'This location still has alerts. Delete them first.');
+  db.locations.splice(db.locations.indexOf(loc), 1);
+  return jsonRes(204);
+}
+
+// ---- Alerts ----
+function alertIssues(b, requireAll) {
+  const bad400 = [], bad422 = [], has = (k) => b[k] !== undefined;
+  if (requireAll) ['locationId', 'conditions', 'delivery'].forEach(k => { if (!has(k)) bad400.push({ field: k, issue: 'required' }); });
+  if (has('locationId') && typeof b.locationId !== 'string') bad400.push({ field: 'locationId', issue: 'must be a string' });
+  if (has('name') && typeof b.name !== 'string') bad400.push({ field: 'name', issue: 'must be a string' });
+  if (has('conditions')) {
+    if (!Array.isArray(b.conditions) || b.conditions.length < 1 || b.conditions.length > 10) bad400.push({ field: 'conditions', issue: 'must be an array of 1 to 10 conditions' });
+    else {
+      const seen = {};
+      b.conditions.forEach((c, i) => {
+        const f = 'conditions[' + i + ']';
+        if (!c || typeof c !== 'object') { bad400.push({ field: f, issue: 'must be an object' }); return; }
+        if (typeof c.parameter !== 'string') bad400.push({ field: f + '.parameter', issue: 'required string' });
+        else if (ALERT_PARAMS.indexOf(c.parameter) === -1) bad422.push({ field: f + '.parameter', issue: 'unknown parameter' });
+        else if (seen[c.parameter]) bad422.push({ field: f + '.parameter', issue: 'duplicate parameter; combine into one range' });
+        else seen[c.parameter] = true;
+        ['min', 'max'].forEach(k => { if (c[k] !== undefined && !isNum(c[k])) bad400.push({ field: f + '.' + k, issue: 'must be a number' }); });
+        if (c.min === undefined && c.max === undefined) bad400.push({ field: f, issue: 'include min, max, or both' });
+        else if (isNum(c.min) && isNum(c.max) && c.min > c.max) bad422.push({ field: f, issue: 'min must not be greater than max' });
+      });
+    }
+  }
+  if (has('match') && ['all', 'any'].indexOf(b.match) === -1) bad400.push({ field: 'match', issue: 'must be "all" or "any"' });
+  if (has('delivery')) {
+    const dl = b.delivery;
+    if (!dl || typeof dl !== 'object') bad400.push({ field: 'delivery', issue: 'must be an object' });
+    else {
+      if (['webhook', 'email'].indexOf(dl.type) === -1) bad400.push({ field: 'delivery.type', issue: 'must be "webhook" or "email"' });
+      if (typeof dl.target !== 'string' || !dl.target.trim()) bad400.push({ field: 'delivery.target', issue: 'required string' });
+      else if (dl.type === 'webhook' && !/^https:\/\//i.test(dl.target)) bad422.push({ field: 'delivery.target', issue: 'webhook URL must start with https://' });
+      else if (dl.type === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dl.target)) bad422.push({ field: 'delivery.target', issue: 'not a valid email address' });
+    }
+  }
+  if (has('cooldownMinutes') && (!Number.isInteger(b.cooldownMinutes) || b.cooldownMinutes < 5)) bad400.push({ field: 'cooldownMinutes', issue: 'must be an integer of 5 or more' });
+  if (has('status') && ['active', 'paused'].indexOf(b.status) === -1) bad400.push({ field: 'status', issue: 'must be "active" or "paused"' });
+  return { bad400, bad422 };
+}
+function createAlert(text) {
+  const p = parseBody(text); if (p.error) return p.error;
+  const b = p.body, r = alertIssues(b, true);
+  if (r.bad400.length) return bad(r.bad400);
+  if (!db.locations.some(l => l.id === b.locationId)) return notFound('location');
+  if (r.bad422.length) return unprocessable(r.bad422);
+  const t = nowIso();
+  const a = { id: 'alert_' + db.seq.alert++, locationId: b.locationId, name: b.name === undefined ? null : b.name, conditions: b.conditions,
+    match: b.match || 'all', delivery: b.delivery, cooldownMinutes: b.cooldownMinutes === undefined ? 60 : b.cooldownMinutes,
+    status: b.status || 'active', lastTriggeredAt: null, createdAt: t, updatedAt: t };
+  db.alerts.push(a);
+  return jsonRes(201, a);
+}
+function replaceAlert(a, text) {
+  const p = parseBody(text); if (p.error) return p.error;
+  const b = p.body, r = alertIssues(b, true);
+  if (r.bad400.length) return bad(r.bad400);
+  if (!db.locations.some(l => l.id === b.locationId)) return notFound('location');
+  if (r.bad422.length) return unprocessable(r.bad422);
+  // Mock behavior: omitted optional fields reset to defaults; id, createdAt, and lastTriggeredAt are kept.
+  Object.assign(a, { locationId: b.locationId, name: b.name === undefined ? null : b.name, conditions: b.conditions, match: b.match || 'all',
+    delivery: b.delivery, cooldownMinutes: b.cooldownMinutes === undefined ? 60 : b.cooldownMinutes, status: b.status || 'active', updatedAt: nowIso() });
+  return jsonRes(200, a);
+}
+function patchAlert(a, text) {
+  const p = parseBody(text); if (p.error) return p.error;
+  const b = p.body, fields = ['name', 'conditions', 'match', 'delivery', 'cooldownMinutes', 'status'].filter(k => b[k] !== undefined);
+  if (b.locationId !== undefined) return bad([{ field: 'locationId', issue: 'cannot be changed; delete and recreate the alert instead' }]);
+  if (!fields.length) return bad([{ field: '(body)', issue: 'include at least one field to change' }]);
+  const test = Object.assign({}, b);
+  if (b.delivery && typeof b.delivery === 'object') test.delivery = Object.assign({}, a.delivery, b.delivery);
+  const r = alertIssues(test, false);
+  if (r.bad400.length) return bad(r.bad400);
+  if (r.bad422.length) return unprocessable(r.bad422);
+  // Mock behavior: "conditions" replaces the whole array; "delivery" merges field by field.
+  fields.forEach(k => { a[k] = k === 'delivery' ? test.delivery : b[k]; });
+  a.updatedAt = nowIso();
+  return jsonRes(200, a);
+}
+
+// ---- Ecosystem check ----
+// No AbortController/signal here: some hosts (e.g. preview frames that proxy fetch via postMessage) can't clone an AbortSignal.
+function getJson(url, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => { const e = new Error('timeout'); e.name = 'AbortError'; reject(e); }, ms || 8000);
+    realFetch(url)
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(resolve, reject)
+      .finally(() => clearTimeout(timer));
+  });
+}
+async function fetchNws(lat, lon) {
+  const pt = await getJson('https://api.weather.gov/points/' + lat.toFixed(4) + ',' + lon.toFixed(4));
+  const readings = []; let observedAt = null, dist = null, name = null;
+  const stations = await getJson(pt.properties.observationStations);
+  const st = stations.features && stations.features[0];
+  if (st) {
+    const c = st.geometry.coordinates; dist = round(miles(lat, lon, c[1], c[0])); name = st.properties.name;
+    const obs = (await getJson('https://api.weather.gov/stations/' + st.properties.stationIdentifier + '/observations/latest')).properties;
+    observedAt = obs.timestamp || null;
+    if (obs.temperature && obs.temperature.value != null) readings.push({ parameter: 'temperature_f', value: round(obs.temperature.value * 9 / 5 + 32), unit: '°F' });
+    if (obs.windSpeed && obs.windSpeed.value != null) {
+      const perMph = /m_s/.test(obs.windSpeed.unitCode || '') ? 2.23694 : 0.621371; // m/s or km/h -> mph
+      readings.push({ parameter: 'wind_speed_mph', value: round(obs.windSpeed.value * perMph), unit: 'mph' });
+    }
+  }
+  try {
+    const fc = await getJson(pt.properties.forecastHourly);
+    const pop = fc.properties.periods[0].probabilityOfPrecipitation;
+    if (pop && pop.value != null) readings.push({ parameter: 'precipitation_probability_pct', value: pop.value, unit: '%' });
+  } catch (e) { /* forecast is optional */ }
+  return { status: readings.length ? 'ok' : 'no_data', observedAt, stationDistanceMiles: dist, readings, message: name ? 'Station: ' + name : null };
+}
+async function fetchOpenMeteoAir(lat, lon) {
+  const j = await getJson('https://air-quality-api.open-meteo.com/v1/air-quality?current=us_aqi,pm2_5&latitude=' + lat + '&longitude=' + lon);
+  const c = j.current, readings = [];
+  if (c && c.us_aqi != null) readings.push({ parameter: 'aqi', value: c.us_aqi, unit: 'US AQI' });
+  if (c && c.pm2_5 != null) readings.push({ parameter: 'pm25_ugm3', value: c.pm2_5, unit: 'µg/m³' });
+  if (!readings.length) return { status: 'no_data', message: 'No air quality data for this location.' };
+  return { observedAt: c.time ? new Date(c.time + 'Z').toISOString() : null, readings, message: 'Modeled grid data (Open-Meteo), not a station reading.' };
+}
+async function fetchUsgsWater(lat, lon, radius) {
+  const dLat = radius / 69, dLon = radius / (69 * Math.cos(toRad(lat)));
+  const bbox = [lon - dLon, lat - dLat, lon + dLon, lat + dLat].map(v => v.toFixed(4)).join(',');
+  const j = await getJson('https://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065,00010&siteStatus=active&bBox=' + bbox);
+  const want = { '00060': ['streamflow_cfs', 'cfs', v => v], '00065': ['gage_height_ft', 'ft', v => v], '00010': ['water_temp_f', '°F', v => v * 9 / 5 + 32] };
+  const best = {};
+  ((j.value && j.value.timeSeries) || []).forEach(ts => {
+    const code = ts.variable.variableCode[0].value, vals = ts.values[0].value;
+    if (!want[code] || !vals.length) return;
+    const last = vals[vals.length - 1], raw = parseFloat(last.value);
+    if (!Number.isFinite(raw) || raw === ts.variable.noDataValue) return;
+    const g = ts.sourceInfo.geoLocation.geogLocation, d = miles(lat, lon, g.latitude, g.longitude);
+    if (d > radius) return;
+    if (!best[code] || d < best[code].d) best[code] = { d, raw, t: last.dateTime, site: ts.sourceInfo.siteName };
+  });
+  const codes = Object.keys(best);
+  if (!codes.length) return { status: 'no_data', message: 'No active USGS gauges reporting within the search radius.' };
+  const readings = codes.map(c => ({ parameter: want[c][0], value: round(want[c][2](best[c].raw), 2), unit: want[c][1] }));
+  const latest = codes.map(c => best[c].t).sort().pop();
+  const sites = codes.map(c => best[c].site).filter((s, i, a) => a.indexOf(s) === i);
+  return { observedAt: new Date(latest).toISOString(), stationDistanceMiles: round(Math.min.apply(null, codes.map(c => best[c].d))), readings, message: 'Gauge: ' + sites.join('; ') };
+}
+async function fetchQuakes(lat, lon, radius) {
+  const start = new Date(Date.now() - 7 * 864e5).toISOString();
+  const j = await getJson('https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=100&latitude=' + lat + '&longitude=' + lon +
+    '&maxradiuskm=' + round(radius * KM_PER_MILE, 1) + '&starttime=' + encodeURIComponent(start));
+  const events = (j.features || []).filter(f => f.properties.mag != null);
+  if (!events.length) return { message: 'No earthquakes recorded within the search radius in the past 7 days.' };
+  const top = events.reduce((a, b) => (b.properties.mag > a.properties.mag ? b : a));
+  const c = top.geometry.coordinates;
+  return { observedAt: new Date(top.properties.time).toISOString(), stationDistanceMiles: round(miles(lat, lon, c[1], c[0])),
+    readings: [{ parameter: 'earthquake_magnitude', value: top.properties.mag, unit: 'magnitude' }],
+    message: events.length + ' earthquake(s) in the past 7 days; showing the largest (' + (top.properties.place || 'location unknown') + ').' };
+}
+async function fetchInat(lat, lon, radius) {
+  const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+  const j = await getJson('https://api.inaturalist.org/v1/observations?per_page=1&order_by=observed_on&order=desc&quality_grade=research&lat=' + lat +
+    '&lng=' + lon + '&radius=' + round(radius * KM_PER_MILE, 1) + '&d1=' + since);
+  const r = j.results && j.results[0];
+  if (!r) return { status: 'no_data', message: 'No research-grade observations within the search radius in the past 30 days.' };
+  const taxon = r.taxon ? (r.taxon.preferred_common_name || r.taxon.name) : 'unknown species';
+  const when = r.time_observed_at || (r.observed_on ? r.observed_on + 'T00:00:00Z' : null);
+  return { observedAt: when ? new Date(when).toISOString() : null,
+    message: j.total_results + ' research-grade observation(s) in the past 30 days; most recent: ' + taxon + '.' };
+}
+const FETCHERS = { 'nws': fetchNws, 'open-meteo': fetchOpenMeteoAir, 'usgs-water': fetchUsgsWater, 'usgs-earthquakes': fetchQuakes, 'inaturalist': fetchInat };
+const NOT_ENABLED = { 'nasa-firms': 'Requires a NASA FIRMS map key; not enabled in this demo.', 'epa-wqp': 'Not enabled in this demo.' };
+function describeError(e) {
+  if (e && e.name === 'AbortError') return 'The upstream request timed out.';
+  if (e instanceof TypeError) return 'Network error (offline, blocked by the page or browser, or no CORS support).';
+  return 'Upstream error: ' + (e && e.message ? e.message : 'unknown');
+}
+// Sample readings so the demo works even when a live source can't be reached. Always labeled as sample data.
+const SAMPLE_DATA = {
+  'nws': { stationDistanceMiles: 4.2, readings: [{ parameter: 'temperature_f', value: 72.4, unit: '°F' }, { parameter: 'wind_speed_mph', value: 8.1, unit: 'mph' }, { parameter: 'precipitation_probability_pct', value: 20, unit: '%' }], message: 'Station observation and hourly forecast.' },
+  'open-meteo': { stationDistanceMiles: null, readings: [{ parameter: 'aqi', value: 42, unit: 'US AQI' }, { parameter: 'pm25_ugm3', value: 9.8, unit: 'µg/m³' }], message: 'Modeled grid data, not a station reading.' },
+  'usgs-water': { stationDistanceMiles: 3.1, readings: [{ parameter: 'streamflow_cfs', value: 1250, unit: 'cfs' }, { parameter: 'gage_height_ft', value: 4.2, unit: 'ft' }, { parameter: 'water_temp_f', value: 64.5, unit: '°F' }], message: 'Nearest active gauge.' },
+  'epa-wqp': { stationDistanceMiles: 6.8, readings: [], message: '3 recent water quality samples within the search radius.' },
+  'usgs-earthquakes': { stationDistanceMiles: 18.4, readings: [{ parameter: 'earthquake_magnitude', value: 2.3, unit: 'magnitude' }], message: '1 earthquake in the past 7 days.' },
+  'nasa-firms': { stationDistanceMiles: null, readings: [], message: 'No active fire detections within the search radius.' },
+  'inaturalist': { stationDistanceMiles: null, readings: [], message: '5 research-grade observation(s) in the past 30 days; most recent: Northern Cardinal.' }
+};
+function sampleReading(base, reason) {
+  const d = SAMPLE_DATA[base.source];
+  return Object.assign(base, { status: 'ok', observedAt: nowIso(), stationDistanceMiles: d.stationDistanceMiles, readings: d.readings.map(r => Object.assign({}, r)),
+    message: '[Sample data: ' + reason + '] ' + d.message });
+}
+async function readSource(source, category, lat, lon, radius) {
+  const mode = window.demoDataMode || 'auto'; // auto = live with sample fallback | live = live only | sample = sample only
+  const base = { source, category, status: 'ok', observedAt: null, stationDistanceMiles: null, readings: [], message: null };
+  if (mode === 'sample') return sampleReading(base, 'sample-only mode');
+  let failure;
+  if (!FETCHERS[source]) failure = NOT_ENABLED[source];
+  else {
+    try { return Object.assign(base, await FETCHERS[source](lat, lon, radius)); }
+    catch (e) { failure = describeError(e); safeLog('[ecosystem check] ' + source + ': ' + failure, e); }
+  }
+  if (mode === 'auto') return sampleReading(base, failure);
+  return Object.assign(base, { status: 'unavailable', message: failure });
+}
+// Placeholder rules: define your own thresholds (and document them).
+function overallStatus(sources) {
+  let level = 0;
+  sources.forEach(s => s.readings.forEach(r => {
+    if (r.parameter === 'earthquake_magnitude') level = Math.max(level, r.value >= 4.5 ? 2 : r.value >= 3 ? 1 : 0);
+    if (r.parameter === 'wind_speed_mph') level = Math.max(level, r.value >= 40 ? 2 : r.value >= 25 ? 1 : 0);
+    if (r.parameter === 'temperature_f') level = Math.max(level, (r.value >= 110 || r.value <= 0) ? 2 : (r.value >= 100 || r.value <= 15) ? 1 : 0);
+  }));
+  return ['normal', 'watch', 'warning'][level];
+}
+async function runCheck(lat, lon, radius, categories) {
+  const jobs = [];
+  categories.forEach(c => CATEGORY_SOURCES[c].forEach(s => jobs.push(readSource(s, c, lat, lon, radius))));
+  const sources = await Promise.all(jobs);
+  if (sources.every(s => s.status === 'unavailable')) return fail(502, 'all_sources_failed', 'Every requested upstream source failed.');
+  return jsonRes(200, { location: { lat, lon }, generatedAt: nowIso(), overallStatus: overallStatus(sources), sources });
+}
+function handleCheck(q) {
+  const d = [], num = (k) => (q.get(k) === null || q.get(k) === '' ? NaN : Number(q.get(k)));
+  const lat = num('lat'), lon = num('lon'); let radius = 15;
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90) d.push({ field: 'lat', issue: 'required; number from -90 to 90' });
+  if (!Number.isFinite(lon) || lon < -180 || lon > 180) d.push({ field: 'lon', issue: 'required; number from -180 to 180' });
+  if (q.get('radiusMiles') !== null) { radius = num('radiusMiles'); if (!Number.isFinite(radius) || radius < 1 || radius > 60) d.push({ field: 'radiusMiles', issue: 'must be a number from 1 to 60' }); }
+  let cats = Object.keys(CATEGORY_SOURCES);
+  if (q.getAll('include').length) {
+    cats = q.getAll('include').join(',').split(',').map(s => s.trim()).filter(Boolean);
+    cats.filter(c => !CATEGORY_SOURCES[c]).forEach(c => d.push({ field: 'include', issue: 'unknown category "' + c + '"' }));
+  }
+  if (d.length) return bad(d);
+  if (!inUS(lat, lon)) return outsideUS();
+  return runCheck(lat, lon, radius, cats);
+}
+
+// ---- Router ----
+async function handleMock(method, url, bodyText) {
+  const u = new URL(url), q = u.searchParams;
+  const path = u.pathname.replace(/^\/v1/, '').replace(/\/+$/, '') || '/';
+  const wrongMethod = () => fail(405, 'method_not_allowed', 'This method is not supported on this endpoint.');
+  let m;
+  if (path === '/ecosystem/check') return method === 'GET' ? handleCheck(q) : wrongMethod();
+  if (path === '/locations') {
+    if (method === 'GET') { const p = paginate(db.locations, q); return p.error || jsonRes(200, p.body); }
+    return method === 'POST' ? createLocation(bodyText) : wrongMethod();
+  }
+  if ((m = path.match(/^\/locations\/([^/]+)\/check$/))) {
+    const loc = db.locations.find(l => l.id === m[1]);
+    if (method !== 'GET') return wrongMethod();
+    return loc ? runCheck(loc.lat, loc.lon, loc.radiusMiles, Object.keys(CATEGORY_SOURCES)) : notFound('location');
+  }
+  if ((m = path.match(/^\/locations\/([^/]+)$/))) {
+    const loc = db.locations.find(l => l.id === m[1]);
+    if (!loc) return notFound('location');
+    if (method === 'GET') return jsonRes(200, loc);
+    if (method === 'PUT') return replaceLocation(loc, bodyText);
+    if (method === 'PATCH') return patchLocation(loc, bodyText);
+    return method === 'DELETE' ? deleteLocation(loc) : wrongMethod();
+  }
+  if (path === '/alerts') {
+    if (method === 'GET') {
+      const st = q.get('status');
+      if (st !== null && ['active', 'paused', 'triggered'].indexOf(st) === -1) return bad([{ field: 'status', issue: 'must be active, paused, or triggered' }]);
+      const items = db.alerts.filter(a => (!q.get('locationId') || a.locationId === q.get('locationId')) && (!st || a.status === st));
+      const p = paginate(items, q); return p.error || jsonRes(200, p.body);
+    }
+    return method === 'POST' ? createAlert(bodyText) : wrongMethod();
+  }
+  if ((m = path.match(/^\/alerts\/([^/]+)$/))) {
+    const a = db.alerts.find(x => x.id === m[1]);
+    if (!a) return notFound('alert');
+    if (method === 'GET') return jsonRes(200, a);
+    if (method === 'PUT') return replaceAlert(a, bodyText);
+    if (method === 'PATCH') return patchAlert(a, bodyText);
+    if (method === 'DELETE') { db.alerts.splice(db.alerts.indexOf(a), 1); return jsonRes(204); }
+    return wrongMethod();
+  }
+  return fail(404, 'not_found', 'No such endpoint.');
+}
+
+// Intercept calls to the (fictional) API base URL; everything else goes to the real network.
+window.fetch = async function (input, init) {
+  const isReq = typeof Request !== 'undefined' && input instanceof Request;
+  const url = isReq ? input.url : String(input);
+  if (url.indexOf(MOCK_BASE) !== 0) {
+    // Forward to the real network without an AbortSignal (not cloneable in proxied-fetch preview frames).
+    let fwd = init;
+    if (fwd && fwd.signal) { fwd = Object.assign({}, fwd); delete fwd.signal; }
+    return realFetch(input, fwd);
+  }
+  const method = ((init && init.method) || (isReq && input.method) || 'GET').toUpperCase();
+  let bodyText = '';
+  if (init && init.body != null) bodyText = typeof init.body === 'string' ? init.body : String(init.body);
+  else if (isReq && method !== 'GET' && method !== 'HEAD') bodyText = await input.clone().text();
+  return handleMock(method, url, bodyText);
+};
+
+// ---- Demo prefill: sample values for Try it (values only; the documentation text is separate) ----
+const DEMO_PLACES = [
+  { id: 'little-rock', name: 'Little Rock, AR', lat: 34.7465, lon: -92.2896 },
+  { id: 'denver', name: 'Denver, CO', lat: 39.7392, lon: -104.9903 },
+  { id: 'seattle', name: 'Seattle, WA', lat: 47.6062, lon: -122.3321 },
+  { id: 'new-orleans', name: 'New Orleans, LA', lat: 29.9511, lon: -90.0715 },
+  { id: 'miami', name: 'Miami, FL', lat: 25.7617, lon: -80.1918 },
+  { id: 'anchorage', name: 'Anchorage, AK', lat: 61.2181, lon: -149.9003 },
+  { id: 'honolulu', name: 'Honolulu, HI', lat: 21.3069, lon: -157.8583 }
+];
+function buildDemoSpec(place) {
+  const spec = JSON.parse(JSON.stringify(openApiSpec));
+  const setEx = (o, v) => { if (o && o.example === undefined) o.example = v; };
+  const queryEx = { lat: place.lat, lon: place.lon, radiusMiles: 15 };
+  Object.values(spec.paths).forEach(item => Object.values(item).forEach(op => (op.parameters || []).forEach(p => {
+    let v;
+    if (p.in === 'query' && Object.prototype.hasOwnProperty.call(queryEx, p.name)) v = queryEx[p.name];
+    if (p.in === 'path') v = p.name === 'locationId' ? 'loc_1' : p.name === 'alertId' ? 'alert_1' : undefined;
+    if (v !== undefined && p.example === undefined) { p.example = v; if (p.schema) p.schema.example = v; }
+  })));
+  const S = spec.components.schemas;
+  const fill = (schema, vals) => Object.keys(vals).forEach(k => setEx(S[schema].properties[k], vals[k]));
+  fill('LocationInput', { name: 'Sample: ' + place.name, lat: place.lat, lon: place.lon, radiusMiles: 15 });
+  fill('LocationUpdate', { radiusMiles: 25 });
+  fill('AlertInput', {
+    locationId: 'loc_1', name: 'High wind or heat',
+    conditions: [{ parameter: 'wind_speed_mph', min: 25 }, { parameter: 'temperature_f', min: 95 }],
+    match: 'any', delivery: { type: 'email', target: 'you@example.com' }, cooldownMinutes: 60, status: 'active'
+  });
+  fill('AlertUpdate', { status: 'paused' });
+  return spec;
+}
+const placePicker = document.getElementById('sample-place');
+DEMO_PLACES.forEach(pl => { const o = document.createElement('option'); o.value = pl.id; o.textContent = pl.name; placePicker.appendChild(o); });
+const modePicker = document.getElementById('data-mode');
+window.demoDataMode = modePicker.value;
+modePicker.addEventListener('change', () => { window.demoDataMode = modePicker.value; });
+const currentSpec = () => buildDemoSpec(DEMO_PLACES.find(pl => pl.id === placePicker.value) || DEMO_PLACES[0]);
+placePicker.addEventListener('change', () => {
+  const el = document.getElementById('api-sample-doc');
+  if (el && typeof el.loadSpec === 'function') el.loadSpec(currentSpec());
+});
+
+function initApiDocs() {
+  const el = document.getElementById('api-sample-doc');
+  if (!el) return;
+  try {
+    if (typeof el.loadSpec === 'function') {
+      el.loadSpec(currentSpec());
+    } else {
+      const blob = new Blob([JSON.stringify(currentSpec())], { type: 'application/json' });
+      el.setAttribute('spec-url', URL.createObjectURL(blob));
+    }
+  } catch (e) {
+    safeLog('Could not load API spec into RapiDoc', e);
+  }
+}
+if (customElements.get('rapi-doc')) {
+  initApiDocs();
+} else {
+  window.addEventListener('DOMContentLoaded', () => {
+    const check = setInterval(() => {
+      if (customElements.get('rapi-doc')) {
+        clearInterval(check);
+        initApiDocs();
+      }
+    }, 50);
+  });
+}
+</script>
+</body>
+</html>
