@@ -3,60 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Derek Carttar — Technical Writing Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // Apply the saved (or system) theme before first paint to avoid a flash.
+  // Same "theme" key as the other pages, so the choice carries across the site.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') {
+      t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 <style>
+  :root {
+    --bg: #FAF8F5; --text: #1F2937; --lede: #33302C; --body2: #44403C; --muted: #6B7280;
+    --accent: #B45309; --accent-hover: #8A3E09; --on-accent: #FAF8F5;
+    --border: #E7E2D8; --card: #FFFFFF; --surface: #F3EEE4; --hover: #F3EEE4;
+    --btn-bg: #1F2937; --btn-text: #FAF8F5; --band: #1F2937; --shadow: rgba(31,41,55,0.12);
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #1C1A17; --text: #E7E2D8; --lede: #D6D3CE; --body2: #D6D3CE; --muted: #A8A29E;
+    --accent: #F59E0B; --accent-hover: #FBBF24; --on-accent: #1C1A17;
+    --border: #33302C; --card: #262320; --surface: #24211D; --hover: #33302C;
+    --btn-bg: #E7E2D8; --btn-text: #1C1A17; --band: #0F172A; --shadow: rgba(0,0,0,0.5);
+  }
+
   html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
   *, *::before, *::after { box-sizing: inherit; }
-  body { margin: 0; font-family: 'Source Sans 3', sans-serif; background: #FAF8F5; color: #1F2937; overflow-x: hidden; }
-  a { color: #B45309; }
-  a:hover { color: #8A3E09; }
+  body { margin: 0; font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-hover); }
   h1, h2, h3 { font-family: 'Source Sans 3', sans-serif; }
   .wrap { max-width: 880px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 24px); }
   .section { padding: clamp(32px, 8vw, 64px) 0; }
   ul { padding-left: 20px; line-height: 1.8; }
   .btn { text-decoration: none; padding: clamp(11px, 2.5vw, 14px) clamp(18px, 4vw, 28px); border-radius: 8px; font-weight: 600; font-size: clamp(14px, 2.5vw, 16px); display: inline-block; }
-  .btn-dark { background: #1F2937; color: #FAF8F5; }
-  .btn-outline { background: transparent; color: #1F2937; border: 1px solid #1F2937; }
-  .btn-accent { background: #B45309; color: #FAF8F5; }
+  .btn-dark { background: var(--btn-bg); color: var(--btn-text); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--text); }
+  .btn-accent { background: var(--accent); color: var(--on-accent); }
 
-  nav { position: sticky; top: 0; background: #FAF8F5; border-bottom: 1px solid #E7E2D8; z-index: 20; }
+  nav { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); z-index: 20; }
   nav .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: clamp(12px, 3vw, 20px) clamp(16px, 5vw, 24px); max-width: 1280px; gap: 12px; }
   nav .links { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(10px, 2vw, 24px); }
-  nav a { text-decoration: none; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; }
+  nav a { text-decoration: none; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: var(--text); }
+
+  .theme-toggle { font: inherit; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: var(--text); background: transparent; border: 1px solid var(--text); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .dropdown { position: relative; }
-  .dropdown summary { list-style: none; cursor: pointer; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: #1F2937; }
+  .dropdown summary { list-style: none; cursor: pointer; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: var(--text); }
   .dropdown summary::-webkit-details-marker { display: none; }
   .dropdown summary::after { content: '▾'; margin-left: 5px; font-size: 11px; }
   .dropdown[open] summary::after { content: '▴'; }
-  .dropdown-menu { position: absolute; top: calc(100% + 10px); left: 0; background: #FFFFFF; border: 1px solid #E7E2D8; border-radius: 10px; box-shadow: 0 8px 20px rgba(31,41,55,0.12); min-width: 200px; padding: 6px; z-index: 30; }
-  .dropdown-menu a { display: block; padding: 10px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; color: #1F2937; text-decoration: none; white-space: nowrap; }
-  .dropdown-menu a:hover { background: #F3EEE4; }
+  .dropdown-menu { position: absolute; top: calc(100% + 10px); left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 20px var(--shadow); min-width: 200px; padding: 6px; z-index: 30; }
+  .dropdown-menu a { display: block; padding: 10px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--text); text-decoration: none; white-space: nowrap; }
+  .dropdown-menu a:hover { background: var(--hover); }
 
-  .bg-cream { background: #F3EEE4; }
-  .bg-dark { background: #1F2937; }
+  .bg-cream { background: var(--surface); }
+  .bg-dark { background: var(--band); }
   .bg-dark .wrap { color: #D6D3CE; }
   .bg-dark h2 { color: #FAF8F5; }
 
   .job-header { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-  .job-dates { font-size: clamp(13px, 2vw, 15px); color: #6B7280; }
-  .job-company { font-size: clamp(14px, 2.2vw, 16px); color: #6B7280; margin-bottom: 8px; }
+  .job-dates { font-size: clamp(13px, 2vw, 15px); color: var(--muted); }
+  .job-company { font-size: clamp(14px, 2.2vw, 16px); color: var(--muted); margin-bottom: 8px; }
 
   .skill-group { margin-bottom: clamp(16px, 3vw, 24px); }
   .skill-label { font-size: clamp(14px, 2.2vw, 16px); font-weight: 700; margin-bottom: 6px; }
-  .skill-list { font-size: clamp(14px, 2.2vw, 16px); line-height: 1.6; color: #44403C; }
+  .skill-list { font-size: clamp(14px, 2.2vw, 16px); line-height: 1.6; color: var(--body2); }
 
-  .testimonial { background: #F3EEE4; border-left: 4px solid #B45309; padding: clamp(18px, 4vw, 32px); margin: clamp(28px, 6vw, 48px) 0; }
+  .testimonial { background: var(--surface); border-left: 4px solid var(--accent); padding: clamp(18px, 4vw, 32px); margin: clamp(28px, 6vw, 48px) 0; }
   .testimonial p { font-size: clamp(15px, 2.6vw, 19px); line-height: 1.65; font-style: italic; margin: 0 0 16px 0; }
-  .testimonial cite { font-size: clamp(13px, 2vw, 15px); color: #6B7280; font-weight: 600; font-style: normal; }
+  .testimonial cite { font-size: clamp(13px, 2vw, 15px); color: var(--muted); font-weight: 600; font-style: normal; }
 
-  .kicker { font-size: clamp(13px, 2.2vw, 16px); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #B45309; margin-bottom: 8px; }
+  .kicker { font-size: clamp(13px, 2.2vw, 16px); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
 
   h1.hero-name { font-size: clamp(30px, 7vw, 44px); line-height: 1.15; font-weight: 600; margin: 0 0 16px 0; }
-  .hero-sub { font-size: clamp(16px, 3vw, 20px); line-height: 1.6; color: #44403C; margin: 0 0 28px 0; }
+  .hero-sub { font-size: clamp(16px, 3vw, 20px); line-height: 1.6; color: var(--body2); margin: 0 0 28px 0; }
   .section h2 { font-size: clamp(24px, 4.5vw, 32px); }
 
   @media (max-width: 480px) {
@@ -82,6 +112,7 @@
       </details>
       <a href="#skills">Skills</a>
       <a href="#contact">Contact</a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">Dark mode</button>
     </div>
   </div>
 </nav>
@@ -94,14 +125,14 @@
     <a href="mailto:Dbcarttar@gmail.com" class="btn btn-dark">dbcarttar@gmail.com</a>
     <a href="resume.pdf" download class="btn btn-outline">Download Resume (PDF)</a>
   </div>
-  <div style="font-size: clamp(13px, 2vw, 15px); color: #6B7280;">870-731-7035 &nbsp;·&nbsp; McCrory, AR &nbsp;·&nbsp; Open to remote</div>
+  <div style="font-size: clamp(13px, 2vw, 15px); color: var(--muted);">870-731-7035 &nbsp;·&nbsp; McCrory, AR &nbsp;·&nbsp; Open to remote</div>
 </div>
 
 <div class="bg-cream">
   <div class="wrap section" id="about">
     <h2 style="margin: 0 0 20px 0;">About</h2>
-    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: #33302C;">I spent 14 years as a technical writer and editor for a financial tech SaaS company, most recently as Senior Technical Editor. For most of that time I worked on a Documentation team of three; one team member retired about a year before I was laid off, leaving a team of two for that final stretch — which meant covering the majority of documentation for eight products.</p>
-    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: #33302C;">My work centered on MadCap Flare, structured single-sourcing, and Swagger/OpenAPI documentation, along with building and maintaining a tiered knowledge base that served internal staff, clients, and third-party vendors with appropriately scoped versions of shared content.</p>
+    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: var(--lede);">I spent 14 years as a technical writer and editor for a financial tech SaaS company, most recently as Senior Technical Editor. For most of that time I worked on a Documentation team of three; one team member retired about a year before I was laid off, leaving a team of two for that final stretch — which meant covering the majority of documentation for eight products.</p>
+    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: var(--lede);">My work centered on MadCap Flare, structured single-sourcing, and Swagger/OpenAPI documentation, along with building and maintaining a tiered knowledge base that served internal staff, clients, and third-party vendors with appropriately scoped versions of shared content.</p>
   </div>
 </div>
 
@@ -114,7 +145,7 @@
       <div class="job-dates">May 2022 – August 2026</div>
     </div>
     <div class="job-company">ABC Fitness Solutions, LLC (formerly ABC Financial Services) — Remote</div>
-    <ul style="font-size: clamp(15px, 2.4vw, 17px); color: #33302C;">
+    <ul style="font-size: clamp(15px, 2.4vw, 17px); color: var(--lede);">
       <li>Documented API and product releases across 8+ products, working directly in development environments and coordinating with developers and QA testers to verify accuracy before publication.</li>
       <li>Maintained the company's primary help system in MadCap Flare, integrating content from other technical writers on the team.</li>
       <li>Authored and maintained Swagger/OpenAPI documentation for the company's API products.</li>
@@ -130,7 +161,7 @@
       <div class="job-dates">August 2012 – May 2022</div>
     </div>
     <div class="job-company">ABC Financial Services — Little Rock, Arkansas</div>
-    <ul style="font-size: clamp(15px, 2.4vw, 17px); color: #33302C;">
+    <ul style="font-size: clamp(15px, 2.4vw, 17px); color: var(--lede);">
       <li>Built foundational experience with the company's documentation systems and processes, translating complex technical systems into documentation for technical and non-technical audiences, including external clients.</li>
     </ul>
   </div>
@@ -187,20 +218,46 @@
 <div class="wrap section">
   <h2 style="margin: 0 0 12px 0;">Education</h2>
   <div style="font-size: clamp(16px, 2.6vw, 18px); font-weight: 700;">Bachelor of Arts, Professional, Technical, Business, and Scientific Writing</div>
-  <div style="font-size: clamp(14px, 2.2vw, 16px); color: #6B7280;">University of Arkansas at Little Rock — 2009–2012</div>
+  <div style="font-size: clamp(14px, 2.2vw, 16px); color: var(--muted);">University of Arkansas at Little Rock — 2009–2012</div>
 </div>
 
 <div class="bg-cream" id="contact">
   <div class="wrap section">
     <h2 style="margin: 0 0 16px 0;">Get in Touch</h2>
-    <p style="font-size: clamp(15px, 2.4vw, 17px); line-height: 1.6; color: #33302C; max-width: 640px; margin: 0 0 20px 0;">I'm looking for technical writing, editing, and documentation roles — remote or open to relocation. Feel free to reach out directly.</p>
+    <p style="font-size: clamp(15px, 2.4vw, 17px); line-height: 1.6; color: var(--lede); max-width: 640px; margin: 0 0 20px 0;">I'm looking for technical writing, editing, and documentation roles — remote or open to relocation. Feel free to reach out directly.</p>
     <div style="display: flex; gap: clamp(12px, 3vw, 24px); flex-wrap: wrap; font-size: clamp(14px, 2.2vw, 16px); font-weight: 600;">
       <a href="mailto:Dbcarttar@gmail.com">Dbcarttar@gmail.com</a>
-      <span style="color: #6B7280;">870-731-7035</span>
-      <span style="color: #6B7280;">McCrory, AR</span>
+      <span style="color: var(--muted);">870-731-7035</span>
+      <span style="color: var(--muted);">McCrory, AR</span>
     </div>
   </div>
 </div>
 
+<script>
+  // Light / dark toggle (shares the "theme" key with the other pages).
+  (function () {
+    var btn = document.getElementById('theme-toggle');
+    var root = document.documentElement;
+    function label() {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      btn.textContent = dark ? 'Light mode' : 'Dark mode';
+      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      label();
+    });
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+        var saved = null;
+        try { saved = localStorage.getItem('theme'); } catch (err) {}
+        if (!saved) { root.setAttribute('data-theme', e.matches ? 'dark' : 'light'); label(); }
+      });
+    }
+    label();
+  })();
+</script>
 </body>
 </html>
