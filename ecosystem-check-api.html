@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <script>
-  
+  // Apply the saved (or system) theme before first paint to avoid a flash. Same "theme" key as the other pages.
   (function () {
     var t = null;
     try { t = localStorage.getItem('theme'); } catch (e) {}
@@ -78,7 +78,7 @@
   <p class="lede">This is an independent project that aggregates information from several sources.</p>
 
   <p class="lede hint">Click an endpoint to expand it and see more information.</p>
-  <p class="lede hint">No key is needed. The ecosystem check calls live NWS, Open-Meteo, USGS, and iNaturalist data. When a call to a source fails, sample data will be returned instead (switch to Live only to see those failures).</p>
+  <p class="lede hint">No key is needed in this demo. The ecosystem check calls live NWS, Open-Meteo, USGS, and iNaturalist data. When a call to a source fails, sample data will be returned instead (switch to Live only to see those failures). EPA and NASA FIRMS are not connected in this demo, so they always return sample data.</p>
 
   <div class="demo-bar">
     <label for="sample-place">Sample location for Try it:</label>
@@ -104,7 +104,7 @@
       render-style="view"
       schema-style="table"
       show-header="false"
-      show-info="false"
+      show-info="true"
       show-components="false"
       allow-try="true"
       fill-request-fields-with-example="true"
@@ -124,175 +124,351 @@
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/rapidoc/dist/rapidoc-min.js"></script>
 <script>
-// Structure (paths, parameter names/types, schemas, enums, status codes) is a skeleton.
-const T = (note) => note ? "TODO - " + note : "TODO";
 
-const err = (desc) => ({
-  "description": desc,
-  "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
-});
-// ok(description, schema, example): pass a sample response object as the third argument to show it in the docs.
+const md = (...parts) => parts.join("\n\n");
+const ref = (n) => ({ "$ref": "#/components/schemas/" + n });
+const withExample = (media, example) => (example === undefined ? media : Object.assign(media, { "example": example }));
+
+// err(description, example, headers): an error response that uses the shared ErrorResponse schema.
+const err = (desc, example, headers) => {
+  const r = { "description": desc, "content": { "application/json": withExample({ "schema": ref("ErrorResponse") }, example) } };
+  if (headers) r.headers = headers;
+  return r;
+};
+// ok(description, schema, example): a success response.
 const ok = (desc, schema, example) => ({
   "description": desc,
-  "content": { "application/json": Object.assign({ "schema": schema }, example === undefined ? {} : { "example": example }) }
+  "content": { "application/json": withExample({ "schema": schema }, example) }
 });
-const ref = (n) => ({ "$ref": "#/components/schemas/" + n });
-const page = (item) => ({
+const page = (item, description) => ({
   "type": "object",
   "properties": {
-    "data": { "type": "array", "items": ref(item) },
-    "page": { "type": "integer", "description": T("current page number") },
-    "totalPages": { "type": "integer", "description": T("total number of pages for the current limit") }
+    "data": { "type": "array", "items": ref(item), "description": description },
+    "page": { "type": "integer", "description": "Current page number, starting at 1." },
+    "totalPages": { "type": "integer", "description": "Total number of pages for the current limit. 1 when the list is empty." }
   }
 });
 const pageParams = [
-  { "name": "page", "in": "query", "description": T("page number, integer starting at 1; other values return 400"), "schema": { "type": "integer", "default": 1 } },
-  { "name": "limit", "in": "query", "description": T("results per page, integer from 1 to 100 (default 20)"), "schema": { "type": "integer", "default": 20, "maximum": 100 } }
+  { "name": "page", "in": "query", "description": "Page number, an integer starting at 1. Other values return 400.", "schema": { "type": "integer", "default": 1, "minimum": 1 } },
+  { "name": "limit", "in": "query", "description": "Results per page, an integer from 1 to 100. Defaults to 20.", "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 100 } }
 ];
-const idParam = (name) => ({ "name": name, "in": "path", "required": true, "description": T("id of the resource, as returned when it was created (for example loc_1 or alert_1); 404 if no resource has this id"), "schema": { "type": "string" } });
+const idParam = (name, description, example) => ({ "name": name, "in": "path", "required": true, "description": description, "example": example, "schema": { "type": "string", "example": example } });
+
+// ---- Shared examples ----
+const EX_LOCATION = { "id": "loc_1", "name": "Little Rock, AR", "lat": 34.7465, "lon": -92.2896, "radiusMiles": 15, "createdAt": "2026-09-28T15:00:00.000Z", "updatedAt": "2026-09-28T15:00:00.000Z" };
+const EX_ALERT = {
+  "id": "alert_1", "locationId": "loc_1", "name": "Poor air, high river, or hard freeze",
+  "conditions": [{ "parameter": "aqi", "min": 101 }, { "parameter": "streamflow_cfs", "min": 5000, "max": 20000 }, { "parameter": "temperature_f", "max": 20 }],
+  "match": "any", "delivery": { "type": "webhook", "target": "https://example.com/hooks/ecosystem" }, "cooldownMinutes": 60,
+  "status": "active", "lastTriggeredAt": null, "createdAt": "2026-09-28T15:00:00.000Z", "updatedAt": "2026-09-28T15:00:00.000Z"
+};
+const EX_REPORT = {
+  "location": { "lat": 34.7465, "lon": -92.2896 },
+  "generatedAt": "2026-09-28T16:05:12.431Z",
+  "overallStatus": "normal",
+  "sources": [
+    { "source": "nws", "category": "weather", "status": "ok", "observedAt": "2026-09-28T15:52:00.000Z", "stationDistanceMiles": 3.6,
+      "readings": [{ "parameter": "temperature_f", "value": 72.4, "unit": "°F" }, { "parameter": "wind_speed_mph", "value": 8.1, "unit": "mph" }, { "parameter": "precipitation_probability_pct", "value": 20, "unit": "%" }],
+      "message": "Station: Little Rock AFB" },
+    { "source": "open-meteo", "category": "air", "status": "ok", "observedAt": "2026-09-28T16:00:00.000Z", "stationDistanceMiles": null,
+      "readings": [{ "parameter": "aqi", "value": 42, "unit": "US AQI" }, { "parameter": "pm25_ugm3", "value": 9.8, "unit": "µg/m³" }],
+      "message": "Modeled grid data (Open-Meteo), not a station reading." },
+    { "source": "usgs-water", "category": "water", "status": "ok", "observedAt": "2026-09-28T15:45:00.000Z", "stationDistanceMiles": 3.1,
+      "readings": [{ "parameter": "streamflow_cfs", "value": 1250, "unit": "cfs" }, { "parameter": "gage_height_ft", "value": 4.2, "unit": "ft" }, { "parameter": "water_temp_f", "value": 64.5, "unit": "°F" }],
+      "message": "Gauge: Example River near Example City" },
+    { "source": "epa-wqp", "category": "water", "status": "no_data", "observedAt": null, "stationDistanceMiles": null, "readings": [],
+      "message": "No water quality samples within the search radius." },
+    { "source": "usgs-earthquakes", "category": "hazards", "status": "ok", "observedAt": "2026-09-26T03:14:09.000Z", "stationDistanceMiles": 18.4,
+      "readings": [{ "parameter": "earthquake_magnitude", "value": 2.3, "unit": "magnitude" }],
+      "message": "1 earthquake(s) in the past 7 days; showing the largest (12 km NE of Example, AR)." },
+    { "source": "nasa-firms", "category": "hazards", "status": "no_data", "observedAt": null, "stationDistanceMiles": null, "readings": [],
+      "message": "No active fire detections within the search radius." },
+    { "source": "inaturalist", "category": "wildlife", "status": "ok", "observedAt": "2026-09-27T00:00:00.000Z", "stationDistanceMiles": null, "readings": [],
+      "message": "5 research-grade observation(s) in the past 30 days; most recent: Northern Cardinal." }
+  ]
+};
+const errBody = (code, message, details) => (details ? { "code": code, "message": message, "details": details } : { "code": code, "message": message });
+const EX = {
+  badCheck: errBody("validation_error", "The request is invalid.", [{ "field": "lat", "issue": "required; number from -90 to 90" }]),
+  badPaging: errBody("validation_error", "The request is invalid.", [{ "field": "limit", "issue": "must be an integer from 1 to 100" }]),
+  badLocation: errBody("validation_error", "The request is invalid.", [{ "field": "name", "issue": "required" }]),
+  emptyBody: errBody("validation_error", "The request is invalid.", [{ "field": "(body)", "issue": "include at least one field to change" }]),
+  badAlert: errBody("validation_error", "The request is invalid.", [{ "field": "conditions[0].parameter", "issue": "required string" }]),
+  noLocation: errBody("not_found", "No location exists with this ID."),
+  noAlert: errBody("not_found", "No alert exists with this ID."),
+  dupName: errBody("conflict", "A location with this name already exists."),
+  hasAlerts: errBody("conflict", "This location still has alerts. Delete them first."),
+  outside: errBody("out_of_coverage", "Coordinates are outside US coverage.", [{ "field": "lat/lon", "issue": "must be within the United States" }]),
+  rule: errBody("unprocessable", "The request was understood but cannot be processed.", [{ "field": "conditions[0]", "issue": "min must not be greater than max" }]),
+  rate: errBody("rate_limited", "Too many requests. Retry after the number of seconds in the Retry-After header."),
+  allFailed: errBody("all_sources_failed", "Every requested upstream source failed.")
+};
+const RETRY_AFTER = { "Retry-After": { "description": "Number of seconds to wait before retrying.", "schema": { "type": "integer" } } };
+
+const D = {
+  locName: "Display name of the location. Must be unique (compared case-insensitively) and not empty.",
+  lat: "Latitude in decimal degrees (WGS84), from -90 to 90. Must be inside US coverage.",
+  lon: "Longitude in decimal degrees (WGS84), from -180 to 180. US longitudes are negative. Must be inside US coverage.",
+  radius: "Search radius in miles around the location, from 1 to 60. Defaults to 15.",
+  createdAt: "When the resource was created (ISO 8601, UTC).",
+  updatedAt: "When the resource was last changed (ISO 8601, UTC).",
+  alertName: "Optional label for the alert.",
+  conditions: "The parameter ranges to watch, 1 to 10 items with one entry per parameter. How they combine depends on match.",
+  match: "How conditions combine. all requires every condition to be met. any requires at least one.",
+  deliveryType: "How notifications are sent: webhook (an HTTP POST with a JSON body to the target URL) or email.",
+  deliveryTarget: "The webhook URL (must start with https://) or the email address, matching type. An invalid target returns 422.",
+  cooldown: "Minimum number of minutes between repeat notifications. An integer of 5 or more. Defaults to 60.",
+  alertStatus: "Whether the alert is being evaluated: active or paused."
+};
+const deliveryProps = { "type": { "type": "string", "enum": ["webhook", "email"], "description": D.deliveryType }, "target": { "type": "string", "description": D.deliveryTarget } };
+const REASONS422 = "The request is well formed but breaks a rule: min greater than max, an unknown or duplicate parameter, a webhook URL that isn't https, or an invalid email address.";
+const BAD400_ALERT = "A field is missing or invalid: locationId, conditions, match, delivery, cooldownMinutes, or status. Each condition needs a parameter and a min, a max, or both. details lists each problem field.";
 
 const openApiSpec = {
   "openapi": "3.0.3",
   "info": {
     "title": "Ecosystem Check API",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": md(
+      "**Base URL and demo.** The base URL shown here is an example. On this page, requests are answered by a simulated server that runs in your browser, so no key is needed and saved data resets when the page reloads.",
+      "**Authentication.** Send your API key in the `X-API-Key` header on every request. A missing or invalid key returns 401 with the error code `unauthorized`. The demo on this page does not check keys.",
+      "**Errors.** Errors return a JSON body with `code`, `message`, and, for validation problems, `details` (a list of field and issue pairs). 400 means the request is invalid, 404 not found, 409 conflict, 422 the request is well formed but breaks a rule (including coordinates outside US coverage), 429 rate limit exceeded, and 502 every upstream source failed.",
+      "**Rate limits.** Requests over the limit return 429 with a `Retry-After` header (seconds). The demo does not enforce limits.",
+      "**Units and time.** Distances are in miles, temperatures in °F, and wind speeds in mph. Timestamps are ISO 8601 in UTC.",
+      "**Overall status.** Each report has an `overallStatus` of normal, watch, or warning. See the EcosystemReport schema for the thresholds."
+    )
   },
-  "servers": [{ "url": "https://api.example-ecosystem-check.com/v1" }],
+  "servers": [{ "url": "https://api.example-ecosystem-check.com/v1", "description": "Example base URL (simulated in this demo)" }],
   "security": [{ "ApiKeyAuth": [] }],
   "tags": [
-    { "name": "Ecosystem Check", "description": T("combined report for a point, assembled from several upstream sources") },
-    { "name": "Locations", "description": T("saved places to watch: name, coordinates, and search radius") },
-    { "name": "Alerts", "description": T("rules that check parameters at a saved location. For this demo, these are stored but not evaluated.") }
+    { "name": "Ecosystem Check", "description": "Run a combined environmental check for any point in the United States." },
+    { "name": "Locations", "description": "Save places to reuse. A saved location stores a name, coordinates, and a search radius, and alerts refer to locations by id." },
+    { "name": "Alerts", "description": "Rules that check parameters at a saved location. For this demo, these are stored but not evaluated." }
   ],
   "paths": {
     "/ecosystem/check": {
       "get": {
         "tags": ["Ecosystem Check"],
-        "summary": T("verb + resource (run an ecosystem check for a US point)"),
-        "description": T("purpose: One combined ecosystem report for a location in the United States. Uses United States customary measurements (miles, Fahrenheit). The radiusMiles parameter limits which stations, gauges, quakes, and fire are included. A response of no_data indicates that the provider responded, but had no data for the requested location/time. A response of unavailable means that the provider couldn't be reached or otherwise couldn't provide data."),
+        "summary": "Run an ecosystem check for a location",
+        "description": md(
+          "One combined ecosystem report for a location in the United States. Uses United States customary measurements (miles, Fahrenheit). The radiusMiles parameter limits which stations, gauges, earthquakes, and fire detections are included. A response of no_data indicates that the provider responded, but had no data for the requested location/time. A response of unavailable means that the provider couldn't be reached or otherwise couldn't provide data.",
+          "**More about the report**\n\n- Weather comes from the nearest observation station and air quality from the nearest model grid point, so neither is limited by radiusMiles.\n- Earthquakes are the largest event in the past 7 days within the radius. Wildlife is research-grade iNaturalist observations from the past 30 days.\n- Other units: wind speed in mph, streamflow in cubic feet per second (cfs), gage height in feet, water temperature in °F, air quality as US AQI, and PM2.5 in µg/m³.\n- Sources are queried independently, so a report can be partial. A 200 response can include sources with a status of no_data or unavailable. A 502 is returned only when every requested source is unavailable.\n- Coverage is the United States (the 50 states and Puerto Rico), checked against approximate bounding boxes, so a point just across the border may be accepted. Coordinates outside coverage return 422."
+        ),
         "parameters": [
-          { "name": "lat", "in": "query", "required": true, "description": T("latitude in decimal degrees (WGS84), -90 to 90, with an example such as 34.7465; US coverage only, coordinates outside it return 422"), "schema": { "type": "number", "minimum": -90, "maximum": 90 } },
-          { "name": "lon", "in": "query", "required": true, "description": T("longitude in decimal degrees (WGS84), -180 to 180, with an example such as -92.2896; US longitudes are negative; US coverage only"), "schema": { "type": "number", "minimum": -180, "maximum": 180 } },
-          { "name": "radiusMiles", "in": "query", "description": T("search radius in miles around the point defined by the coordinates you provided (1 to 60, default 15); limits which stations, gauges, earthquakes, and fire detections count; upstream services use kilometers, converted to miles"), "schema": { "type": "number", "default": 15, "minimum": 1, "maximum": 60 } },
-          { "name": "include", "in": "query", "description": T("optional comma-separated categories (weather, air, water, hazards, wildlife); default is all five; unknown values return 400"), "style": "form", "explode": false, "schema": { "type": "array", "items": ref("Category") } }
+          { "name": "lat", "in": "query", "required": true, "description": "Latitude of the point to check, in decimal degrees (WGS84), from -90 to 90. Must be inside US coverage.", "example": 34.7465, "schema": { "type": "number", "minimum": -90, "maximum": 90, "example": 34.7465 } },
+          { "name": "lon", "in": "query", "required": true, "description": "Longitude of the point to check, in decimal degrees (WGS84), from -180 to 180. US longitudes are negative. Must be inside US coverage.", "example": -92.2896, "schema": { "type": "number", "minimum": -180, "maximum": 180, "example": -92.2896 } },
+          { "name": "radiusMiles", "in": "query", "description": "Search radius in miles around the point defined by the coordinates you provided (1 to 60, default 15); limits which stations, gauges, earthquakes, and fire detections count; some upstream services use kilometers, converted to miles.", "example": 15, "schema": { "type": "number", "default": 15, "minimum": 1, "maximum": 60, "example": 15 } },
+          { "name": "include", "in": "query", "description": "Comma-separated list of categories to include: weather, air, water, hazards, wildlife. Defaults to all five. An unknown category returns 400. Sources in the response follow the order you list.", "style": "form", "explode": false, "schema": { "type": "array", "items": ref("Category") } }
         ],
         "responses": {
-          "200": ok(T("combined report with location, generatedAt, overallStatus, and one entry per source. A 200 can still contain sources with status no_data or unavailable"),  ref("EcosystemReport")),
-          "400": err(T("missing or invalid lat, lon, or radiusMiles, or an unknown include category; details lists each problem field")),
-          "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")), // outside US coverage
-          "429": err(T("rate limit exceeded; document the limit, the Retry-After header, and that sources may also throttle requests")),
-          "502": err(T("every requested source failed (error code all_sources_failed); partial failures return 200 instead"))  // every source failed
+          "200": ok("Combined report with location, generatedAt, overallStatus, and one entry per source. A 200 can still contain sources with status no_data or unavailable.", ref("EcosystemReport"), EX_REPORT),
+          "400": err("A parameter is missing or invalid: lat, lon, radiusMiles, or an unknown include category. details lists each problem field.", EX.badCheck),
+          "422": err("The coordinates are outside US coverage (error code out_of_coverage).", EX.outside),
+          "429": err("Rate limit exceeded. Wait the number of seconds in the Retry-After header before retrying. This demo does not enforce rate limits.", EX.rate, RETRY_AFTER),
+          "502": err("Every requested source was unavailable (error code all_sources_failed). If only some sources fail, the response is a 200 with per-source status.", EX.allFailed)
         }
       }
     },
     "/locations": {
       "get": {
         "tags": ["Locations"],
-        "summary": T("verb + resource (list saved locations)"),
-        "description": T("list saved locations. Cover: ordering (state which), pagination with page, limit, and totalPages, and what an empty list looks like"),
+        "summary": "List saved locations",
+        "description": "List saved locations, oldest first. Results are paginated with page and limit, and totalPages gives the number of pages. When no locations are saved, data is an empty array and totalPages is 1.",
         "parameters": pageParams,
-        "responses": { "200": ok(T("one page of saved locations plus page and totalPages; say what an empty list looks like"),  page("Location")), "400": err(T("invalid page or limit value; details names the field")) }
+        "responses": {
+          "200": ok("One page of saved locations, with page and totalPages. When none exist, data is an empty array.", page("Location", "The saved locations on this page."), { "data": [EX_LOCATION], "page": 1, "totalPages": 1 }),
+          "400": err("page or limit is not a valid integer in range. details names the field.", EX.badPaging)
+        }
       },
       "post": {
         "tags": ["Locations"],
-        "summary": T("verb + resource (create a saved location)"),
-        "description": T("create a saved location. Names must be unique (409). Coordinates must be inside the US (422). The response returns the server-generated id"),
-        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationInput") } } }, // TODO: add "example"
-        "responses": { "201": ok(T("the created location, including its server-generated id and timestamps"),  ref("Location")), "400": err(T("missing or invalid name, lat, lon, or radiusMiles, or a body that is not valid JSON; details lists each field")), "409": err(T("a location with this name already exists (names are compared case-insensitively)")), "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")) }
+        "summary": "Create a saved location",
+        "description": md(
+          "Create a saved location. Names must be unique (409). Coordinates must be inside the US (422). The response returns the server-generated id.",
+          "The name is trimmed and compared case-insensitively. radiusMiles is optional and defaults to 15."
+        ),
+        "requestBody": { "required": true, "description": "The location to save.", "content": { "application/json": { "schema": ref("LocationInput"), "example": { "name": "Denver, CO", "lat": 39.7392, "lon": -104.9903, "radiusMiles": 20 } } } },
+        "responses": {
+          "201": ok("The created location, including its server-generated id and timestamps.", ref("Location"), Object.assign({}, EX_LOCATION, { "id": "loc_2", "name": "Denver, CO", "lat": 39.7392, "lon": -104.9903, "radiusMiles": 20 })),
+          "400": err("name, lat, lon, or radiusMiles is missing or invalid, or the body is not valid JSON. details lists each problem field.", EX.badLocation),
+          "409": err("Another location already has this name (compared case-insensitively).", EX.dupName),
+          "422": err("The coordinates are outside US coverage (error code out_of_coverage).", EX.outside)
+        }
       }
     },
     "/locations/{locationId}": {
       "get": {
         "tags": ["Locations"],
-        "summary": T("verb + resource (fetch one saved location)"),
-        "description": T("fetch one location by id in the format loc_1. An unknown id returns a 404"),
-        "parameters": [idParam("locationId")],
-        "responses": { "200": ok(T("the requested location"),  ref("Location")), "404": err(T("no location exists with this id")) }
+        "summary": "Get a saved location",
+        "description": "Fetch one location by id in the format loc_1. An unknown id returns a 404.",
+        "parameters": [idParam("locationId", "Id of the saved location, as returned when it was created (for example loc_1).", "loc_1")],
+        "responses": {
+          "200": ok("The requested location.", ref("Location"), EX_LOCATION),
+          "404": err("No location exists with this id.", EX.noLocation)
+        }
       },
       "put": {
         "tags": ["Locations"],
-        "summary": T("verb + resource; signal that this replaces the whole location"),
-       "description": T("Unlike PATCH location, PUT location replaces the current coordinates. name, lat, lon are required. Omitting radiusMiles resets the value to default (15) while id and createdAt are unchanged. 409 is returned if the name is already taken. 422 is returned if the coordinates are outside the US."),
-        "parameters": [idParam("locationId")],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationInput") } } }, // TODO: add "example"
-        "responses": { "200": ok(T("the replaced location; id and createdAt are unchanged"),  ref("Location")), "400": err(T("a required field (name, lat, lon) is missing, a value is invalid, or the body is not valid JSON")), "404": err(T("no location exists with this id")), "409": err(T("another location already has this name")), "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")) }
+        "summary": "Replace a saved location",
+        "description": md(
+          "Unlike PATCH location, PUT location replaces the entire location. name, lat, lon are required. Omitting radiusMiles resets the value to default (15) while id and createdAt are unchanged. 409 is returned if the name is already taken. 422 is returned if the coordinates are outside the US."
+        ),
+        "parameters": [idParam("locationId", "Id of the saved location to replace (for example loc_1).", "loc_1")],
+        "requestBody": { "required": true, "description": "The complete location. Optional fields that are left out are reset to their defaults.", "content": { "application/json": { "schema": ref("LocationInput"), "example": { "name": "Little Rock, AR", "lat": 34.7465, "lon": -92.2896, "radiusMiles": 15 } } } },
+        "responses": {
+          "200": ok("The replaced location. id and createdAt are unchanged and updatedAt is refreshed.", ref("Location"), EX_LOCATION),
+          "400": err("A required field (name, lat, lon) is missing, a value is invalid, or the body is not valid JSON.", EX.badLocation),
+          "404": err("No location exists with this id.", EX.noLocation),
+          "409": err("Another location already has this name.", EX.dupName),
+          "422": err("The coordinates are outside US coverage (error code out_of_coverage).", EX.outside)
+        }
       },
       "patch": {
         "tags": ["Locations"],
-        "summary": T("verb + resource; signal that this changes only the fields sent"),
-        "description": T("Unlike PUT location, PATCH location changes only the fields you include. Omitted fields are unchanged. The request body must contain at least one field or will return 400. The included fields are validated like POST, rather than PUT"),
-        "parameters": [idParam("locationId")],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("LocationUpdate") } } }, // TODO: add "example"
-        "responses": { "200": ok(T("the updated location with the changed fields applied"),  ref("Location")), "400": err(T("empty body, invalid JSON, or an invalid value in a field that was sent")), "404": err(T("no location exists with this id")), "409": err(T("the new name is already used by another location")), "422": err(T("coordinates are outside US coverage (error code out_of_coverage)")) }
+        "summary": "Update part of a saved location",
+        "description": md(
+          "Unlike PUT location, PATCH location changes only the fields you include. Omitted fields are unchanged. The request body must contain at least one field; otherwise the API returns 400. The included fields are validated with the same rules as POST and PUT.",
+          "A 409 is returned if the new name is already taken, and a 422 if the resulting coordinates are outside the US."
+        ),
+        "parameters": [idParam("locationId", "Id of the saved location to update (for example loc_1).", "loc_1")],
+        "requestBody": { "required": true, "description": "Only the fields to change.", "content": { "application/json": { "schema": ref("LocationUpdate"), "example": { "radiusMiles": 25 } } } },
+        "responses": {
+          "200": ok("The updated location with the changed fields applied.", ref("Location"), Object.assign({}, EX_LOCATION, { "radiusMiles": 25, "updatedAt": "2026-09-28T16:10:00.000Z" })),
+          "400": err("The body is empty, is not valid JSON, or contains an invalid value.", EX.emptyBody),
+          "404": err("No location exists with this id.", EX.noLocation),
+          "409": err("The new name is already used by another location.", EX.dupName),
+          "422": err("The resulting coordinates are outside US coverage (error code out_of_coverage).", EX.outside)
+        }
       },
       "delete": {
         "tags": ["Locations"],
-        "summary": T("verb + resource (delete a saved location)"),
-        "description": T("delete a location. Cover: blocked with 409 while alerts still reference it (delete the alerts first); success returns 204 with no body"),
-        "parameters": [idParam("locationId")],
-        "responses": { "204": { "description": T("deleted; no response body") }, "404": err(T("no location exists with this id")), "409": err(T("the location still has alerts; delete the alerts first")) }
+        "summary": "Delete a saved location",
+        "description": "Delete a saved location. A location that still has alerts can't be deleted (409), so delete its alerts first. A successful delete returns 204 with no body.",
+        "parameters": [idParam("locationId", "Id of the saved location to delete (for example loc_1).", "loc_1")],
+        "responses": {
+          "204": { "description": "Deleted. No response body." },
+          "404": err("No location exists with this id.", EX.noLocation),
+          "409": err("The location still has alerts. Delete the alerts first.", EX.hasAlerts)
+        }
       }
     },
     "/alerts": {
       "get": {
         "tags": ["Alerts"],
-        "summary": T("verb + resource (list alerts)"),
-        "description": T("list all alerts. locationId and status filters (active, paused, triggered) are optional"),
+        "summary": "List alerts",
+        "description": md(
+          "List all alerts. locationId and status filters (active, paused, triggered) are optional.",
+          "Results are ordered oldest first and paginated with page and limit."
+        ),
         "parameters": pageParams.concat([
-          { "name": "locationId", "in": "query", "description": T("filter to alerts that watch this saved location id"), "schema": { "type": "string" } },
-          { "name": "status", "in": "query", "description": T("filter by alert status: active, paused, or triggered; other values return 400"), "schema": ref("AlertStatus") }
+          { "name": "locationId", "in": "query", "description": "Return only alerts for this saved location id.", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "description": "Return only alerts with this status. Other values return 400.", "schema": ref("AlertStatus") }
         ]),
-        "responses": { "200": ok(T("one page of alerts plus page and totalPages, after any locationId or status filter"),  page("Alert")), "400": err(T("invalid page, limit, or status value; details names the field")) }
+        "responses": {
+          "200": ok("One page of alerts, after any locationId or status filter, with page and totalPages.", page("Alert", "The alerts on this page."), { "data": [EX_ALERT], "page": 1, "totalPages": 1 }),
+          "400": err("page, limit, or status is invalid. details names the field.", EX.badPaging)
+        }
       },
       "post": {
         "tags": ["Alerts"],
-        "summary": T("verb + resource (create an alert)"),
-        "description": T("create an alert for a saved location; include an example with several parameter ranges; 404 = unknown locationId; 422 = rule failures; alerts are stored but not evaluated or sent in this demo"),
-        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertInput") } } }, // TODO: add "example" with multiple parameter ranges
-        "responses": { "201": ok(T("the created alert, including id, status, and lastTriggeredAt (null until it fires)"),  ref("Alert")), "400": err(T("missing or invalid locationId, conditions, match, delivery, cooldownMinutes, or status; each condition needs a parameter plus min, max, or both; details lists each field")), "404": err(T("locationId does not match a saved location")), "422": err(T("a rule failed after the body was parsed: min greater than max, unknown or duplicate parameter, webhook URL that is not https, or an invalid email address")) }
+        "summary": "Create an alert",
+        "description": md(
+          "Create an alert for a saved location. A 404 is returned if locationId doesn't match a saved location, and a 422 if a rule fails (for example, min greater than max). Alerts are stored but not evaluated or sent in this demo.",
+          "**Conditions.** conditions is a list of 1 to 10 parameter ranges. Each condition names a parameter and a min, a max, or both, and the bounds are inclusive. Each parameter can appear only once. See AlertParameter for the parameters and their units.",
+          "**Matching.** match controls how conditions combine. all (the default) requires every condition to be met, and any requires at least one.",
+          "**Delivery.** delivery sets where notifications go: a webhook (an https URL) or an email address. cooldownMinutes (default 60, minimum 5) is the minimum time between repeat notifications, and status starts as active unless you set paused.",
+          "Validation problems (400) are reported before the location lookup (404) and the rule checks (422)."
+        ),
+        "requestBody": { "required": true, "description": "The alert to create.", "content": { "application/json": { "schema": ref("AlertInput"), "example": {
+          "locationId": "loc_1", "name": "Poor air, high river, or hard freeze",
+          "conditions": [{ "parameter": "aqi", "min": 101 }, { "parameter": "streamflow_cfs", "min": 5000, "max": 20000 }, { "parameter": "temperature_f", "max": 20 }],
+          "match": "any", "delivery": { "type": "webhook", "target": "https://example.com/hooks/ecosystem" }, "cooldownMinutes": 60, "status": "active"
+        } } } },
+        "responses": {
+          "201": ok("The created alert, including its id, status, and lastTriggeredAt (null until it fires).", ref("Alert"), EX_ALERT),
+          "400": err(BAD400_ALERT, EX.badAlert),
+          "404": err("locationId doesn't match a saved location.", EX.noLocation),
+          "422": err(REASONS422, EX.rule)
+        }
       }
     },
     "/alerts/{alertId}": {
       "get": {
         "tags": ["Alerts"],
-        "summary": T("verb + resource (fetch one alert)"),
-        "description": T("fetch a specified alert and include status and lastTriggeredAt value. Until the alert is triggered, lastTriggeredAt is null"),
-        "parameters": [idParam("alertId")],
-        "responses": { "200": ok(T("the requested alert"),  ref("Alert")), "404": err(T("no alert exists with this id")) }
+        "summary": "Get an alert",
+        "description": "Fetch a specified alert and include status and lastTriggeredAt value. Until the alert is triggered, lastTriggeredAt is null.",
+        "parameters": [idParam("alertId", "Id of the alert (for example alert_1).", "alert_1")],
+        "responses": {
+          "200": ok("The requested alert.", ref("Alert"), EX_ALERT),
+          "404": err("No alert exists with this id.", EX.noAlert)
+        }
       },
       "put": {
         "tags": ["Alerts"],
-        "summary": T("verb + resource; signal that this replaces the whole alert"),
-        "description": T("replace the entire alert. locationId, conditions, and delivery are required. Omitted optional fields reset to defaults (match all, cooldownMinutes 60, and status active, respectively). id, createdAt, and lastTriggeredAt values are unchanged"),
-        "parameters": [idParam("alertId")],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertInput") } } }, // TODO: add "example"
-        "responses": { "200": ok(T("the replaced alert; id, createdAt, and lastTriggeredAt are unchanged (confirm this is your rule)"),  ref("Alert")), "400": err(T("missing or invalid locationId, conditions, match, delivery, cooldownMinutes, or status; each condition needs a parameter plus min, max, or both; details lists each field")), "404": err(T("no alert exists with this id, or locationId does not match a saved location")), "422": err(T("a rule failed after the body was parsed: min greater than max, unknown or duplicate parameter, webhook URL that is not https, or an invalid email address")) }
+        "summary": "Replace an alert",
+        "description": md(
+          "Replace the entire alert. locationId, conditions, and delivery are required. Omitted optional fields reset to defaults: name to null, match to all, cooldownMinutes to 60, and status to active. id, createdAt, and lastTriggeredAt values are unchanged.",
+          "A 404 is returned if the alert or the locationId isn't found."
+        ),
+        "parameters": [idParam("alertId", "Id of the alert to replace (for example alert_1).", "alert_1")],
+        "requestBody": { "required": true, "description": "The complete alert. Optional fields that are left out are reset to their defaults.", "content": { "application/json": { "schema": ref("AlertInput"), "example": {
+          "locationId": "loc_1", "name": "Heat or wind watch",
+          "conditions": [{ "parameter": "temperature_f", "min": 95 }, { "parameter": "wind_speed_mph", "min": 25 }],
+          "match": "any", "delivery": { "type": "email", "target": "you@example.com" }, "cooldownMinutes": 60, "status": "active"
+        } } } },
+        "responses": {
+          "200": ok("The replaced alert. id, createdAt, and lastTriggeredAt are unchanged.", ref("Alert"), Object.assign({}, EX_ALERT, { "name": "Heat or wind watch", "conditions": [{ "parameter": "temperature_f", "min": 95 }, { "parameter": "wind_speed_mph", "min": 25 }], "delivery": { "type": "email", "target": "you@example.com" }, "updatedAt": "2026-09-28T16:10:00.000Z" })),
+          "400": err(BAD400_ALERT, EX.badAlert),
+          "404": err("No alert exists with this id, or locationId doesn't match a saved location.", EX.noAlert),
+          "422": err(REASONS422, EX.rule)
+        }
       },
       "patch": {
         "tags": ["Alerts"],
-        "summary": T("verb + resource; signal that this changes only the fields sent"),
-        "description": T("change only the included fields. Must include one field conditions replaces the whole array, while delivery merges field by field. locationId cannot be changed (400); the body must contain at least one field"),
-        "parameters": [idParam("alertId")],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": ref("AlertUpdate") } } }, // TODO: add "example"
-        "responses": { "200": ok(T("the updated alert with the changed fields applied"),  ref("Alert")), "400": err(T("empty body, invalid JSON, an invalid value in a field that was sent, or locationId included (it cannot be changed)")), "404": err(T("no alert exists with this id")), "422": err(T("a rule failed after the body was parsed: min greater than max, unknown or duplicate parameter, webhook URL that is not https, or an invalid email address")) }
+        "summary": "Update part of an alert",
+        "description": "Change only the included fields. Omitted fields are unchanged. The body must contain at least one field. conditions replaces the whole array, while delivery merges field by field. locationId cannot be changed (400).",
+        "parameters": [idParam("alertId", "Id of the alert to update (for example alert_1).", "alert_1")],
+        "requestBody": { "required": true, "description": "Only the fields to change.", "content": { "application/json": { "schema": ref("AlertUpdate"), "example": { "status": "paused", "cooldownMinutes": 120 } } } },
+        "responses": {
+          "200": ok("The updated alert with the changed fields applied.", ref("Alert"), Object.assign({}, EX_ALERT, { "status": "paused", "cooldownMinutes": 120, "updatedAt": "2026-09-28T16:10:00.000Z" })),
+          "400": err("The body is empty, is not valid JSON, contains an invalid value, or includes locationId, which cannot be changed.", EX.emptyBody),
+          "404": err("No alert exists with this id.", EX.noAlert),
+          "422": err(REASONS422, EX.rule)
+        }
       },
       "delete": {
         "tags": ["Alerts"],
-        "summary": T("verb + resource (delete an alert)"),
-        "description": T("permanently delete an alert. Cover: notifications stop immediately; 204 with no body; 404 if it is already gone"),
-        "parameters": [idParam("alertId")],
-        "responses": { "204": { "description": T("deleted; no response body") }, "404": err(T("no alert exists with this id")) }
+        "summary": "Delete an alert",
+        "description": "Permanently delete an alert. Notifications for the alert stop immediately. A successful delete returns 204 with no body, and deleting an alert that doesn't exist returns 404.",
+        "parameters": [idParam("alertId", "Id of the alert to delete (for example alert_1).", "alert_1")],
+        "responses": {
+          "204": { "description": "Deleted. No response body." },
+          "404": err("No alert exists with this id.", EX.noAlert)
+        }
       }
     }
   },
   "components": {
     "securitySchemes": {
-      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "X-API-Key", "description": T("how to get an API key and send it in the X-API-Key header; a missing or invalid key returns 401 on any endpoint (document that once here); the in-browser demo does not check keys") }
+      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "X-API-Key", "description": "Your API key, sent in the X-API-Key header on every request. A missing or invalid key returns 401 (error code unauthorized). The demo on this page does not check keys." }
     },
     "schemas": {
-      "Category": { "type": "string", "enum": ["weather", "air", "water", "hazards", "wildlife"], "description": T("what each category covers; providers are listed on Source") },
-      "Source": { "type": "string", "enum": ["nws", "open-meteo", "usgs-water", "epa-wqp", "usgs-earthquakes", "nasa-firms", "inaturalist"], "description": T("provider ids used in SourceReading.source: nws = api.weather.gov, open-meteo = Open-Meteo Air Quality API, usgs-water = USGS Water Services, epa-wqp = EPA Water Quality Portal, usgs-earthquakes = USGS Earthquake Catalog, nasa-firms = NASA FIRMS, inaturalist = iNaturalist API; consider linking each provider's docs") },
-      "AlertStatus": { "type": "string", "enum": ["active", "paused", "triggered"], "description": T("meaning of each value: active = being evaluated; paused = kept but not evaluated; triggered = conditions were met and a notification was sent; say when it returns to active") },
+      "Category": {
+        "type": "string", "enum": ["weather", "air", "water", "hazards", "wildlife"],
+        "description": "What each category covers. weather: current conditions and the next hour's chance of rain. air: air quality index and PM2.5. water: streamflow, gage height, and water temperature from nearby gauges, plus water quality samples. hazards: recent earthquakes and active fires. wildlife: recent research-grade species observations."
+      },
+      "Source": {
+        "type": "string", "enum": ["nws", "open-meteo", "usgs-water", "epa-wqp", "usgs-earthquakes", "nasa-firms", "inaturalist"],
+        "description": md(
+          "The provider that supplied a reading.",
+          "| Id | Provider | Category | Documentation |\n|---|---|---|---|\n| nws | National Weather Service (api.weather.gov) | weather | [docs](https://www.weather.gov/documentation/services-web-api) |\n| open-meteo | Open-Meteo Air Quality API | air | [docs](https://open-meteo.com/en/docs/air-quality-api) |\n| usgs-water | USGS Water Services | water | [docs](https://waterservices.usgs.gov/) |\n| epa-wqp | EPA Water Quality Portal | water | [docs](https://www.waterqualitydata.us/) |\n| usgs-earthquakes | USGS Earthquake Catalog | hazards | [docs](https://earthquake.usgs.gov/fdsnws/event/1/) |\n| nasa-firms | NASA FIRMS | hazards | [docs](https://firms.modaps.eosdis.nasa.gov/api/) |\n| inaturalist | iNaturalist API | wildlife | [docs](https://api.inaturalist.org/v1/docs/) |",
+          "In this demo, epa-wqp and nasa-firms are not connected and always return sample data."
+        )
+      },
+      "AlertStatus": {
+        "type": "string", "enum": ["active", "paused", "triggered"],
+        "description": "active: the alert is being evaluated. paused: the alert is kept but not evaluated. triggered: the most recent evaluation met the alert's conditions and a notification was sent. Alerts are not evaluated in this demo, so none reach triggered."
+      },
       "AlertParameter": {
         "type": "string",
         "enum": [
@@ -301,22 +477,33 @@ const openApiSpec = {
           "streamflow_cfs", "gage_height_ft", "water_temp_f",
           "earthquake_magnitude", "fire_distance_miles"
         ],
-        "description": T("each alertable parameter with its unit and source: temperature_f (°F), wind_speed_mph (mph), precipitation_probability_pct (%) from NWS; aqi (US AQI), pm25_ugm3 (µg/m³) from Open-Meteo Air Quality; streamflow_cfs (ft³/s), gage_height_ft (ft), water_temp_f (°F) from USGS Water Services; earthquake_magnitude from the USGS Earthquake Catalog; fire_distance_miles (miles) from NASA FIRMS. Metric upstream values are converted. Wildlife has no alertable parameter. Consider a parameter / unit / source table")
+        "description": md(
+          "A reading that can be watched by an alert and appears in report readings. Metric values from providers are converted to the units below.",
+          "| Parameter | Unit | Source | Notes |\n|---|---|---|---|\n| temperature_f | °F | nws | Latest station observation |\n| wind_speed_mph | mph | nws | Latest station observation |\n| precipitation_probability_pct | % | nws | Chance of rain in the next hour |\n| aqi | US AQI | open-meteo | Modeled, not a station reading |\n| pm25_ugm3 | µg/m³ | open-meteo | Modeled, not a station reading |\n| streamflow_cfs | cfs (cubic feet per second) | usgs-water | Nearest gauge within the radius |\n| gage_height_ft | ft | usgs-water | Nearest gauge within the radius |\n| water_temp_f | °F | usgs-water | Nearest gauge within the radius |\n| earthquake_magnitude | magnitude | usgs-earthquakes | Largest event in the past 7 days within the radius |\n| fire_distance_miles | miles | nasa-firms | Distance to the nearest fire detection (not available in this demo) |",
+          "Wildlife (iNaturalist) has no alertable parameter."
+        )
       },
       "EcosystemReport": {
         "type": "object",
         "properties": {
           "location": ref("Coordinates"),
-          "generatedAt": { "type": "string", "format": "date-time", "description": T("when this report was assembled (ISO 8601, UTC); differs from each source's observedAt") },
-          "overallStatus": { "type": "string", "enum": ["normal", "watch", "warning"], "description": T("normal, watch, or warning; explain how it is derived and list the thresholds (for example wind speed, temperature, earthquake magnitude)") },
-          "sources": { "type": "array", "items": ref("SourceReading"), "description": T("one entry per upstream source queried, in category order; explain that sources fail independently") }
+          "generatedAt": { "type": "string", "format": "date-time", "description": "When this report was assembled (ISO 8601, UTC). Each source's observedAt can be earlier." },
+          "overallStatus": {
+            "type": "string", "enum": ["normal", "watch", "warning"],
+            "description": md(
+              "The most severe condition found across the readings. normal means no reading reaches a watch threshold.",
+              "| Parameter | watch | warning |\n|---|---|---|\n| wind_speed_mph | 25 or higher | 40 or higher |\n| temperature_f | 15 or lower, or 100 or higher | 0 or lower, or 110 or higher |\n| earthquake_magnitude | 3.0 or higher | 4.5 or higher |\n| aqi | 101 or higher | 151 or higher |",
+              "Other readings (precipitation probability, PM2.5, streamflow, gage height, water temperature, fire distance) do not affect overallStatus. In this demo, sample data counts like live data."
+            )
+          },
+          "sources": { "type": "array", "items": ref("SourceReading"), "description": "One entry per requested source, in the order of the requested categories. Sources are queried independently, so each has its own status." }
         }
       },
       "Coordinates": {
         "type": "object",
         "properties": {
-          "lat": { "type": "number", "description": T("latitude in decimal degrees (WGS84)") },
-          "lon": { "type": "number", "description": T("longitude in decimal degrees (WGS84)") }
+          "lat": { "type": "number", "description": "Latitude in decimal degrees (WGS84)." },
+          "lon": { "type": "number", "description": "Longitude in decimal degrees (WGS84)." }
         }
       },
       "SourceReading": {
@@ -324,144 +511,129 @@ const openApiSpec = {
         "properties": {
           "source": ref("Source"),
           "category": ref("Category"),
-          "status": { "type": "string", "enum": ["ok", "no_data", "unavailable"], "description": T("no_data indicates the source responded but nothing nearby or recent was found. Expand radiusMiles if needed. unavailable indicates the source failed, timed out, or is not enabled") },
-          "observedAt": { "type": "string", "format": "date-time", "nullable": true, "description": T("when the upstream source made the observation (ISO 8601, UTC), not the request time; null when there is none") },
-          "stationDistanceMiles": { "type": "number", "nullable": true, "description": T("miles from the requested point to the station, gauge, or event that supplied the data; null for modeled or grid data") },
+          "status": { "type": "string", "enum": ["ok", "no_data", "unavailable"], "description": "ok indicates the source returned usable data. no_data indicates the source responded but nothing nearby or recent was found. Expand radiusMiles if needed. unavailable indicates the source failed, timed out, or is not enabled." },
+          "observedAt": { "type": "string", "format": "date-time", "nullable": true, "description": "When the source made the observation (ISO 8601, UTC), not the time of the request. For earthquakes it is the time of the event, and for iNaturalist the most recent observation. Null when there is no observation." },
+          "stationDistanceMiles": { "type": "number", "nullable": true, "description": "Distance in miles from the requested point to the station, gauge, or earthquake that supplied the data. Null for modeled grid data and when no distance applies." },
           "readings": {
             "type": "array",
-            "description": T("measured values from this source; empty when status is not ok or the source has no alertable parameter"),
+            "description": "Measured values from this source. Empty when the status isn't ok or the source has no alertable parameter (for example iNaturalist).",
             "items": {
               "type": "object",
               "properties": {
                 "parameter": ref("AlertParameter"),
-                "value": { "type": "number", "description": T("measured value, in the unit given") },
-                "unit": { "type": "string", "description": T("unit of the value (°F, mph, %, US AQI, µg/m³, cfs, ft, magnitude)") }
+                "value": { "type": "number", "description": "The measured value, in the unit given." },
+                "unit": { "type": "string", "description": "Unit of the value, such as °F, mph, %, US AQI, µg/m³, cfs, ft, or magnitude." }
               }
             }
           },
-          "message": { "type": "string", "nullable": true, "description": T("human-readable note about the reading, such as the station name or why status is not ok") }
+          "message": { "type": "string", "nullable": true, "description": "Human-readable detail, such as the station name or the reason a source is unavailable. In this demo, sample data is labeled at the start of the message: [Sample data: reason]." }
         }
       },
       "LocationInput": {
         "type": "object",
         "required": ["name", "lat", "lon"],
         "properties": {
-          "name": { "type": "string", "description": T("display name for the location; must be unique (case-insensitive) and non-empty") },
-          "lat": { "type": "number", "minimum": -90, "maximum": 90, "description": T("latitude in decimal degrees (WGS84)") },
-          "lon": { "type": "number", "minimum": -180, "maximum": 180, "description": T("longitude in decimal degrees (WGS84)") },
-          "radiusMiles": { "type": "number", "default": 15, "minimum": 1, "maximum": 60, "description": T("search radius in miles, 1 to 60 (default 15)") }
+          "name": { "type": "string", "description": D.locName },
+          "lat": { "type": "number", "minimum": -90, "maximum": 90, "description": D.lat },
+          "lon": { "type": "number", "minimum": -180, "maximum": 180, "description": D.lon },
+          "radiusMiles": { "type": "number", "default": 15, "minimum": 1, "maximum": 60, "description": D.radius }
         }
       },
       "LocationUpdate": {
         "type": "object",
         "minProperties": 1,
-        "description": T("PATCH body: include only the fields to change; at least one field is required"),
+        "description": "The fields to change. Include at least one; omitted fields are unchanged.",
         "properties": {
-          "name": { "type": "string", "description": T("display name for the location; must be unique (case-insensitive) and non-empty") },
-          "lat": { "type": "number", "minimum": -90, "maximum": 90, "description": T("latitude in decimal degrees (WGS84)") },
-          "lon": { "type": "number", "minimum": -180, "maximum": 180, "description": T("longitude in decimal degrees (WGS84)") },
-          "radiusMiles": { "type": "number", "minimum": 1, "maximum": 60, "description": T("search radius in miles, 1 to 60 (default 15)") }
+          "name": { "type": "string", "description": D.locName },
+          "lat": { "type": "number", "minimum": -90, "maximum": 90, "description": D.lat },
+          "lon": { "type": "number", "minimum": -180, "maximum": 180, "description": D.lon },
+          "radiusMiles": { "type": "number", "minimum": 1, "maximum": 60, "description": D.radius }
         }
       },
       "Location": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": T("server-generated location id (for example loc_1)") },
-          "name": { "type": "string", "description": T("display name for the location; must be unique (case-insensitive) and non-empty") },
-          "lat": { "type": "number", "description": T("latitude in decimal degrees (WGS84)") },
-          "lon": { "type": "number", "description": T("longitude in decimal degrees (WGS84)") },
-          "radiusMiles": { "type": "number", "description": T("search radius in miles, 1 to 60 (default 15)") },
-          "createdAt": { "type": "string", "format": "date-time", "description": T("when the resource was created (ISO 8601, UTC)") },
-          "updatedAt": { "type": "string", "format": "date-time", "description": T("when the resource was last changed (ISO 8601, UTC)") }
+          "id": { "type": "string", "description": "Server-generated id of the location, for example loc_1." },
+          "name": { "type": "string", "description": D.locName },
+          "lat": { "type": "number", "description": D.lat },
+          "lon": { "type": "number", "description": D.lon },
+          "radiusMiles": { "type": "number", "description": D.radius },
+          "createdAt": { "type": "string", "format": "date-time", "description": D.createdAt },
+          "updatedAt": { "type": "string", "format": "date-time", "description": D.updatedAt }
         }
       },
       "AlertCondition": {
         "type": "object",
-        "description": T("one condition: a parameter plus min, max, or both; bounds are inclusive; use one condition per parameter"),
+        "description": "One parameter range. The condition is met when the reading is at least min and at most max. Give min, max, or both.",
         "required": ["parameter"],
         "anyOf": [{ "required": ["min"] }, { "required": ["max"] }],
         "properties": {
           "parameter": ref("AlertParameter"),
-          "min": { "type": "number", "description": T("lower bound, inclusive, in the unit of the parameter; at least one of min or max is required; min must not exceed max") },
-          "max": { "type": "number", "description": T("upper bound, inclusive, in the unit of the parameter; at least one of min or max is required") }
+          "min": { "type": "number", "description": "Lower bound, inclusive, in the unit of the parameter. Must not be greater than max." },
+          "max": { "type": "number", "description": "Upper bound, inclusive, in the unit of the parameter." }
         }
       },
       "AlertInput": {
         "type": "object",
         "required": ["locationId", "conditions", "delivery"],
         "properties": {
-          "locationId": { "type": "string", "description": T("id of the saved location to watch; must exist (404 otherwise)") },
-          "name": { "type": "string", "description": T("optional label for the alert") },
-          "conditions": { "type": "array", "minItems": 1, "maxItems": 10, "items": ref("AlertCondition"), "description": T("1 to 10 parameter ranges; explain how they combine with match; one entry per parameter") },
-          "match": { "type": "string", "enum": ["all", "any"], "default": "all", "description": T("all = every condition must be met; any = at least one; default all") },
-          "delivery": {
-            "type": "object",
-            "required": ["type", "target"],
-            "description": T("where to send the notification"),
-            "properties": {
-              "type": { "type": "string", "enum": ["webhook", "email"], "description": T("delivery method: webhook (POST to an https URL) or email") },
-              "target": { "type": "string", "description": T("webhook URL (https only) or email address; validated for the chosen type (422)") }
-            }
-          },
-          "cooldownMinutes": { "type": "integer", "minimum": 5, "default": 60, "description": T("minimum minutes between repeat notifications; integer, minimum 5, default 60") },
-          "status": { "type": "string", "enum": ["active", "paused"], "default": "active", "description": T("active (default) or paused") }
+          "locationId": { "type": "string", "description": "Id of the saved location to watch. Must exist (404 otherwise)." },
+          "name": { "type": "string", "description": D.alertName },
+          "conditions": { "type": "array", "minItems": 1, "maxItems": 10, "items": ref("AlertCondition"), "description": D.conditions },
+          "match": { "type": "string", "enum": ["all", "any"], "default": "all", "description": D.match },
+          "delivery": { "type": "object", "required": ["type", "target"], "description": "Where to send notifications.", "properties": deliveryProps },
+          "cooldownMinutes": { "type": "integer", "minimum": 5, "default": 60, "description": D.cooldown },
+          "status": { "type": "string", "enum": ["active", "paused"], "default": "active", "description": D.alertStatus + " Defaults to active." }
         }
       },
       "AlertUpdate": {
         "type": "object",
         "minProperties": 1,
-        "description": T("PATCH body: include only the fields to change; state your rule for conditions (replaces the array) and delivery (merges); locationId cannot be changed; at least one field is required"),
+        "description": "The fields to change. Include at least one; omitted fields are unchanged. conditions replaces the whole array, delivery merges field by field, and locationId cannot be changed.",
         "properties": {
-          "name": { "type": "string", "description": T("optional label for the alert") },
-          "conditions": { "type": "array", "minItems": 1, "maxItems": 10, "items": ref("AlertCondition"), "description": T("1 to 10 parameter ranges; explain how they combine with match; one entry per parameter") },
-          "match": { "type": "string", "enum": ["all", "any"], "description": T("all = every condition must be met; any = at least one; default all") },
-          "delivery": {
-            "type": "object",
-            "description": T("where to send the notification"),
-            "properties": {
-              "type": { "type": "string", "enum": ["webhook", "email"], "description": T("delivery method: webhook (POST to an https URL) or email") },
-              "target": { "type": "string", "description": T("webhook URL (https only) or email address; validated for the chosen type (422)") }
-            }
-          },
-          "cooldownMinutes": { "type": "integer", "minimum": 5, "description": T("minimum minutes between repeat notifications; integer, minimum 5, default 60") },
-          "status": { "type": "string", "enum": ["active", "paused"], "description": T("active or paused") }
+          "name": { "type": "string", "description": D.alertName },
+          "conditions": { "type": "array", "minItems": 1, "maxItems": 10, "items": ref("AlertCondition"), "description": D.conditions + " Replaces the existing conditions." },
+          "match": { "type": "string", "enum": ["all", "any"], "description": D.match },
+          "delivery": { "type": "object", "description": "Where to send notifications. Include only the fields to change; the rest are kept.", "properties": deliveryProps },
+          "cooldownMinutes": { "type": "integer", "minimum": 5, "description": D.cooldown },
+          "status": { "type": "string", "enum": ["active", "paused"], "description": D.alertStatus }
         }
       },
       "Alert": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": T("server-generated alert id (for example alert_1)") },
-          "locationId": { "type": "string", "description": T("id of the saved location to watch; must exist (404 otherwise)") },
-          "name": { "type": "string", "nullable": true, "description": T("optional label for the alert; null when none was given") },
-          "conditions": { "type": "array", "items": ref("AlertCondition"), "description": T("1 to 10 parameter ranges; explain how they combine with match; one entry per parameter") },
-          "match": { "type": "string", "enum": ["all", "any"], "description": T("all = every condition must be met; any = at least one; default all") },
-          "delivery": {
-            "type": "object",
-            "properties": {
-              "type": { "type": "string", "enum": ["webhook", "email"] },
-              "target": { "type": "string" }
-            }
-          },
-          "cooldownMinutes": { "type": "integer", "description": T("minimum minutes between repeat notifications; integer, minimum 5, default 60") },
+          "id": { "type": "string", "description": "Server-generated id of the alert, for example alert_1." },
+          "locationId": { "type": "string", "description": "Id of the saved location the alert watches." },
+          "name": { "type": "string", "nullable": true, "description": D.alertName + " Null when none was given." },
+          "conditions": { "type": "array", "items": ref("AlertCondition"), "description": D.conditions },
+          "match": { "type": "string", "enum": ["all", "any"], "description": D.match },
+          "delivery": { "type": "object", "description": "Where notifications are sent.", "properties": deliveryProps },
+          "cooldownMinutes": { "type": "integer", "description": D.cooldown },
           "status": ref("AlertStatus"),
-          "lastTriggeredAt": { "type": "string", "format": "date-time", "nullable": true, "description": T("when the alert last fired (ISO 8601, UTC); null until it fires") },
-          "createdAt": { "type": "string", "format": "date-time", "description": T("when the resource was created (ISO 8601, UTC)") },
-          "updatedAt": { "type": "string", "format": "date-time", "description": T("when the resource was last changed (ISO 8601, UTC)") }
+          "lastTriggeredAt": { "type": "string", "format": "date-time", "nullable": true, "description": "When the alert last fired (ISO 8601, UTC). Null until it fires." },
+          "createdAt": { "type": "string", "format": "date-time", "description": D.createdAt },
+          "updatedAt": { "type": "string", "format": "date-time", "description": D.updatedAt }
         }
       },
       "ErrorResponse": {
         "type": "object",
         "properties": {
-          "code": { "type": "string", "description": T("machine-readable error code (for example validation_error, invalid_json, not_found, conflict, unprocessable, out_of_coverage, all_sources_failed); document each with the status codes it accompanies") },
-          "message": { "type": "string", "description": T("human-readable description of the error") },
+          "code": {
+            "type": "string",
+            "description": md(
+              "Machine-readable error code.",
+              "| Code | Status | Meaning |\n|---|---|---|\n| validation_error | 400 | A field is missing or invalid |\n| invalid_json | 400 | The body is missing or is not a JSON object |\n| unauthorized | 401 | Missing or invalid API key |\n| not_found | 404 | The resource or endpoint doesn't exist |\n| method_not_allowed | 405 | The endpoint doesn't support this method |\n| conflict | 409 | The name is taken, or the location still has alerts |\n| unprocessable | 422 | The request breaks a rule |\n| out_of_coverage | 422 | Coordinates are outside US coverage |\n| rate_limited | 429 | Too many requests |\n| all_sources_failed | 502 | Every requested source was unavailable |"
+            )
+          },
+          "message": { "type": "string", "description": "Human-readable description of the error." },
           "details": {
             "type": "array",
-            "description": T("field-level problems for validation errors; each item has a field and an issue"),
+            "description": "Field-level problems, present for validation and rule errors.",
             "items": {
               "type": "object",
               "properties": {
-                "field": { "type": "string" },
-                "issue": { "type": "string" }
+                "field": { "type": "string", "description": "The request field with the problem, for example conditions[0].parameter." },
+                "issue": { "type": "string", "description": "What is wrong with the field." }
               }
             }
           }
@@ -514,7 +686,6 @@ const MOCK_BASE = 'https://api.example-ecosystem-check.com/v1';
 function safeLog(msg, detail) {
   try { const c = window.console; const fn = c && (c.log || c.warn || c.error); if (typeof fn === 'function') fn.call(c, msg, detail === undefined ? '' : detail); } catch (e) { /* ignore */ }
 }
-safeLog('[ecosystem check] demo build 2026-09-28d');
 const realFetch = window.fetch.bind(window);
 const KM_PER_MILE = 1.609344;
 const CATEGORY_SOURCES = {
@@ -828,11 +999,12 @@ async function readSource(source, category, lat, lon, radius) {
   if (mode === 'auto') return sampleReading(base, failure);
   return Object.assign(base, { status: 'unavailable', message: failure });
 }
-// Placeholder rules: define your own thresholds (and document them).
+// Thresholds documented on the EcosystemReport.overallStatus schema. Keep the two in sync.
 function overallStatus(sources) {
   let level = 0;
   sources.forEach(s => s.readings.forEach(r => {
     if (r.parameter === 'earthquake_magnitude') level = Math.max(level, r.value >= 4.5 ? 2 : r.value >= 3 ? 1 : 0);
+    if (r.parameter === 'aqi') level = Math.max(level, r.value >= 151 ? 2 : r.value >= 101 ? 1 : 0);
     if (r.parameter === 'wind_speed_mph') level = Math.max(level, r.value >= 40 ? 2 : r.value >= 25 ? 1 : 0);
     if (r.parameter === 'temperature_f') level = Math.max(level, (r.value >= 110 || r.value <= 0) ? 2 : (r.value >= 100 || r.value <= 15) ? 1 : 0);
   }));
@@ -931,24 +1103,16 @@ const DEMO_PLACES = [
 ];
 function buildDemoSpec(place) {
   const spec = JSON.parse(JSON.stringify(openApiSpec));
-  const setEx = (o, v) => { if (o && o.example === undefined) o.example = v; };
-  const queryEx = { lat: place.lat, lon: place.lon, radiusMiles: 15 };
+  const queryEx = { lat: place.lat, lon: place.lon };
   Object.values(spec.paths).forEach(item => Object.values(item).forEach(op => (op.parameters || []).forEach(p => {
-    let v;
-    if (p.in === 'query' && Object.prototype.hasOwnProperty.call(queryEx, p.name)) v = queryEx[p.name];
-    if (p.in === 'path') v = p.name === 'locationId' ? 'loc_1' : p.name === 'alertId' ? 'alert_1' : undefined;
-    if (v !== undefined && p.example === undefined) { p.example = v; if (p.schema) p.schema.example = v; }
+    if (p.in === 'query' && Object.prototype.hasOwnProperty.call(queryEx, p.name)) {
+      p.example = queryEx[p.name];
+      if (p.schema) p.schema.example = queryEx[p.name];
+    }
   })));
-  const S = spec.components.schemas;
-  const fill = (schema, vals) => Object.keys(vals).forEach(k => setEx(S[schema].properties[k], vals[k]));
-  fill('LocationInput', { name: 'Sample: ' + place.name, lat: place.lat, lon: place.lon, radiusMiles: 15 });
-  fill('LocationUpdate', { radiusMiles: 25 });
-  fill('AlertInput', {
-    locationId: 'loc_1', name: 'High wind or heat',
-    conditions: [{ parameter: 'wind_speed_mph', min: 25 }, { parameter: 'temperature_f', min: 95 }],
-    match: 'any', delivery: { type: 'email', target: 'you@example.com' }, cooldownMinutes: 60, status: 'active'
-  });
-  fill('AlertUpdate', { status: 'paused' });
+  const loc = { name: 'Sample: ' + place.name, lat: place.lat, lon: place.lon, radiusMiles: 15 };
+  spec.paths['/locations'].post.requestBody.content['application/json'].example = loc;
+  spec.paths['/locations/{locationId}'].put.requestBody.content['application/json'].example = loc;
   return spec;
 }
 const placePicker = document.getElementById('sample-place');
