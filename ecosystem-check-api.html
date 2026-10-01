@@ -57,6 +57,20 @@
   .demo-bar select { font: inherit; font-weight: 500; color: #1F2937; background: #FFFFFF; border: 1px solid #C9C3B8; border-radius: 8px; padding: 6px 10px; max-width: 100%; }
   :root[data-theme="dark"] .demo-bar select { color: #E7E2D8; background: #262320; border-color: #4A453F; }
   .demo-bar + .doc-frame { margin-top: 12px; }
+  .notes { margin-top: clamp(40px, 8vw, 64px); }
+  .notes h2 { font-size: clamp(22px, 4vw, 28px); line-height: 1.25; font-weight: 600; margin: 0 0 8px 0; }
+  .notes h3 { font-size: clamp(17px, 3vw, 20px); font-weight: 700; margin: clamp(24px, 5vw, 32px) 0 8px 0; }
+  .notes p, .notes li { font-size: clamp(15px, 2.4vw, 17px); line-height: 1.7; color: #33302C; max-width: 760px; }
+  .notes p { margin: 0 0 12px 0; }
+  .notes ul, .notes ol { padding-left: 22px; margin: 0 0 12px 0; }
+  .notes li { margin-bottom: 8px; }
+  .table-scroll { overflow-x: auto; margin: 8px 0 12px 0; }
+  .notes table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: clamp(14px, 2.2vw, 16px); }
+  .notes th, .notes td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid #E7E2D8; line-height: 1.5; }
+  .notes th { font-weight: 700; border-bottom: 2px solid #C9C3B8; }
+  :root[data-theme="dark"] .notes p, :root[data-theme="dark"] .notes li { color: #D6D3CE; }
+  :root[data-theme="dark"] .notes th, :root[data-theme="dark"] .notes td { border-bottom-color: #33302C; }
+  :root[data-theme="dark"] .notes th { border-bottom-color: #4A453F; }
 </style>
 </head>
 <body>
@@ -116,6 +130,57 @@
       style="height: 85vh; min-height: 500px; width: 100%; display: block;"
     ></rapi-doc>
   </div>
+
+  <section class="notes" id="case-study">
+    <div class="kicker">Case study</div>
+    <h2>How I documented this API</h2>
+
+    <h3>The problem</h3>
+    <p>The Ecosystem Check API combines seven public data sources (weather, air quality, water, earthquakes, fires, and wildlife) into one report. Each source has its own format, units, coverage, and ways of failing. A reader of the docs needs to know which source supplied each value, what a 200 means when one source is down, which units come back, and what happens outside the United States.</p>
+
+    <h3>Decisions</h3>
+    <ul>
+      <li><strong>Partial results.</strong> A report succeeds (200) even when some sources fail. Each source has its own status: ok, no_data, or unavailable. A 502 is returned only when every requested source is unavailable.</li>
+      <li><strong>Units.</strong> Everything is converted to US customary units (miles, °F, mph). One table lists each parameter with its unit and source.</li>
+      <li><strong>Coverage.</strong> The API is US-only. Coordinates outside the US return a 422 instead of an empty report.</li>
+      <li><strong>PUT and PATCH.</strong> PUT replaces a whole resource and resets omitted optional fields. PATCH changes only the fields sent. Each endpoint states which fields are reset and which are kept.</li>
+      <li><strong>What is simulated.</strong> The overview says the server runs in the browser, that alerts are stored but not evaluated, and that sample data is labeled when a live source can't be reached.</li>
+      <li><strong>One place for repeated facts.</strong> Authentication and the 401 response are described once in the overview instead of on every endpoint.</li>
+    </ul>
+
+    <h3>How I checked the docs</h3>
+    <p>I checked the spec against the running demo instead of trusting it. A script did three things:</p>
+    <ol>
+      <li>Confirmed that every endpoint, parameter, and field has a description, and that every request and response has an example.</li>
+      <li>Validated all 48 examples against their schemas.</li>
+      <li>Called each of the 13 endpoints with the documented examples, plus deliberately bad requests, and confirmed that every status code returned is documented and every response body matches its schema.</li>
+    </ol>
+    <p>The script is <a href="check-docs.js">check-docs.js</a>. Run it with Node to repeat the checks. It exits with an error when the docs and the demo disagree.</p>
+
+    <h3>What the checks found</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>The docs said</th><th>The demo did</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PUT and PATCH location: no 409</td><td>Returned 409 for a duplicate name</td><td>Documented the 409 on both</td></tr>
+          <tr><td>List endpoints: no 400</td><td>Returned 400 for an invalid page, limit, or status</td><td>Documented the 400 on both</td></tr>
+          <tr><td>Alert name is a string</td><td>Returned null when no name was given</td><td>Marked the field nullable</td></tr>
+          <tr><td>PUT alert resets three defaults</td><td>Also reset name to null</td><td>Listed all four resets</td></tr>
+          <tr><td>PUT location "replaces the current coordinates"</td><td>Replaced the entire location</td><td>Corrected the wording</td></tr>
+          <tr><td>Overall status: air quality not mentioned</td><td>Ignored air quality</td><td>Added air quality thresholds and documented all of them</td></tr>
+          <tr><td>An empty include parameter: not documented</td><td>Returned 502</td><td>Treated as all categories</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What this doesn't show</h3>
+    <p>This is a designed API documented against a simulated implementation, not a production service. The checks confirm that the docs match the demo, not a real backend. The 401 and 429 responses are documented but can't be produced by the demo.</p>
+
+    <h3>How this was made</h3>
+    <p>I designed the API and wrote the introduction and many of the endpoint descriptions. Claude drafted the remaining spec text, the examples, and the demo code, and ran the checks above. I reviewed and corrected the result and made the design decisions listed here.</p>
+  </section>
 
   <div style="margin-top: 24px;">
     <a href="api-docs.html" class="btn btn-outline">← Back to API Docs</a>
