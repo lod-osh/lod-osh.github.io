@@ -3,31 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark">
 <title>Derek Carttar — Technical Writing Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>
-  // Apply the saved (or system) theme before first paint to avoid a flash.
-  // Same "theme" key as the other pages, so the choice carries across the site.
-  (function () {
-    var t = null;
-    try { t = localStorage.getItem('theme'); } catch (e) {}
-    if (t !== 'light' && t !== 'dark') {
-      t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-    }
-    document.documentElement.setAttribute('data-theme', t);
-  })();
-</script>
 <style>
   :root {
-    --bg: #FAF8F5; --text: #1F2937; --lede: #33302C; --body2: #44403C; --muted: #6B7280;
-    --accent: #B45309; --accent-hover: #8A3E09; --on-accent: #FAF8F5;
-    --border: #E7E2D8; --card: #FFFFFF; --surface: #F3EEE4; --hover: #F3EEE4;
-    --btn-bg: #1F2937; --btn-text: #FAF8F5; --band: #1F2937; --shadow: rgba(31,41,55,0.12);
-  }
-  :root[data-theme="dark"] {
     color-scheme: dark;
     --bg: #1C1A17; --text: #E7E2D8; --lede: #D6D3CE; --body2: #D6D3CE; --muted: #A8A29E;
     --accent: #F59E0B; --accent-hover: #FBBF24; --on-accent: #1C1A17;
@@ -54,13 +36,7 @@
   nav .links { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(10px, 2vw, 24px); }
   nav a { text-decoration: none; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: var(--text); }
 
-  .theme-toggle { font: inherit; font-weight: 600; font-size: clamp(13px, 2vw, 15px); color: var(--text); background: transparent; border: 1px solid var(--text); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
-  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .tt-icon { display: none; }
   @media (max-width: 600px) {
-    .tt-text { display: none; }
-    .tt-icon { display: inline; font-size: 16px; line-height: 1; }
-    .theme-toggle { padding: 4px 9px; line-height: 1.2; }
     nav .links { gap: 8px 12px; }
   }
 
@@ -78,6 +54,31 @@
   .bg-dark .wrap { color: #D6D3CE; }
   .bg-dark h2 { color: #FAF8F5; }
 
+  .dd-group { border-top: 1px solid var(--border); }
+  details.dd { border-bottom: 1px solid var(--border); }
+  details.dd > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0; font-weight: 700; font-size: clamp(16px, 2.6vw, 19px); color: var(--text); }
+  details.dd > summary::-webkit-details-marker { display: none; }
+  details.dd > summary::after { content: '▾'; font-size: 16px; color: var(--accent); flex: none; }
+  details.dd[open] > summary::after { content: '▴'; }
+  details.dd > summary:hover { color: var(--accent); }
+  details.dd > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.dd-top { border-top: 1px solid var(--border); }
+  details.dd-top > summary { font-size: clamp(18px, 3vw, 22px); }
+  details.dd-sub { border-top: 1px solid var(--border); border-bottom: 0; margin-top: 8px; }
+  details.dd-t3 > summary { font-size: clamp(15px, 2.3vw, 17px); }
+  details.dd-sub > summary { font-size: clamp(14px, 2.1vw, 16px); }
+  .dd-body { padding: 4px 0 20px 0; }
+  .dd-body > :first-child { margin-top: 0; }
+  .dd-body .testimonial { margin: 4px 0 28px 0; }
+  .dd-title { display: flex; flex-direction: column; gap: 2px; }
+  .dd-meta { font-size: clamp(13px, 2vw, 15px); font-weight: 400; color: var(--muted); }
+  .bg-dark .dd-group, .bg-dark details.dd, .bg-dark details.dd-sub { border-color: rgba(250,248,245,0.2); }
+  .flare-notes p, .flare-notes li { font-size: clamp(15px, 2.4vw, 17px); line-height: 1.7; }
+  .flare-notes ol { padding-left: 24px; line-height: 1.8; }
+  .flare-notes ol ol { list-style: lower-alpha; }
+  .flare-notes strong { color: #FAF8F5; }
+  .flare-notes code { background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 4px; font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; color: #FAF8F5; word-break: break-all; }
+
   .job-header { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
   .job-dates { font-size: clamp(13px, 2vw, 15px); color: var(--muted); }
   .job-company { font-size: clamp(14px, 2.2vw, 16px); color: var(--muted); margin-bottom: 8px; }
@@ -92,9 +93,9 @@
 
   .kicker { font-size: clamp(13px, 2.2vw, 16px); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
 
-  h1.hero-name { font-size: clamp(30px, 7vw, 44px); line-height: 1.15; font-weight: 600; margin: 0 0 16px 0; }
+  h1.hero-name { font-size: clamp(24px, 5vw, 32px); line-height: 1.15; font-weight: 600; margin: 0 0 16px 0; }
   .hero-sub { font-size: clamp(16px, 3vw, 20px); line-height: 1.6; color: var(--body2); margin: 0 0 28px 0; }
-  .section h2 { font-size: clamp(24px, 4.5vw, 32px); }
+  .section h2 { font-size: clamp(18px, 3vw, 22px); }
 
   @media (max-width: 480px) {
     .btn { width: 100%; text-align: center; }
@@ -110,48 +111,49 @@
     <div class="links">
       <a href="#about">About</a>
       <a href="#experience">Experience</a>
-      <details class="dropdown">
-        <summary>Sample</summary>
-        <div class="dropdown-menu">
-          <a href="https://help.abcfitness.com/ignite/home.htm" target="_blank" rel="noopener">Ignite Help (Software Documentation)</a>
-          <a href="https://lod-osh.github.io/api-docs.html">API Documentation</a>
-        </div>
-      </details>
+      <a href="#samples">Writing Samples</a>
       <a href="#skills">Skills</a>
       <a href="#contact">Contact</a>
-      <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode"><span class="tt-icon" aria-hidden="true">☾︎</span><span class="tt-text">Dark mode</span></button>
     </div>
   </div>
 </nav>
 
 <div class="wrap section">
-  <div class="kicker">Technical Writer and Editor · API and Developer Documentation</div>
+  <div class="kicker">Technical Writer and Editor · API and Software Documentation</div>
   <h1 class="hero-name">Derek Carttar</h1>
   <p class="hero-sub">Technical writer and editor with 14 years at one financial tech and fitness tech software company. Wrote API and product documentation using MadCap Flare and Swagger/OpenAPI. Helped set up a knowledge base for internal staff, clients, and outside vendors. Worked with developers, testers, and support teams.</p>
   <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px;">
     <a href="mailto:dbcarttar@gmail.com" class="btn btn-dark">dbcarttar@gmail.com</a>
     <a href="resume.pdf" download class="btn btn-outline">Download Resume (PDF)</a>
   </div>
-  <div style="font-size: clamp(13px, 2vw, 15px); color: var(--muted);">870-731-7035 &nbsp;·&nbsp; McCrory, AR &nbsp;·&nbsp; Open to remote &nbsp;·&nbsp; <a href="https://www.linkedin.com/in/derek-carttar-0bb67237" target="_blank" rel="noopener">LinkedIn</a></div>
+  <div style="font-size: clamp(13px, 2vw, 15px); color: var(--muted);">McCrory, AR &nbsp;·&nbsp; Open to remote &nbsp;·&nbsp; <a href="https://www.linkedin.com/in/derek-carttar-0bb67237" target="_blank" rel="noopener">LinkedIn</a></div>
 </div>
 
 <div class="bg-cream">
-  <div class="wrap section" id="about">
-    <h2 style="margin: 0 0 20px 0;">About</h2>
+  <div class="wrap" style="padding-top: 8px; padding-bottom: 8px;">
+    <details class="dd dd-top" id="about">
+      <summary>About</summary>
+      <div class="dd-body">
     <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: var(--lede);">I spent 14 years as a technical writer and editor for a financial tech and fitness tech software company, most recently as Senior Technical Editor. I worked directly with developers, testers, and support teams to document API and product releases, and I helped set up a knowledge base for internal staff, clients, and outside vendors.</p>
     <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7; color: var(--lede);">My work centered on MadCap Flare, structured single-sourcing, and Swagger/OpenAPI documentation. More recently I brought AI-assisted tools such as Cursor, Claude, ChatGPT, and Atlassian Rovo into documentation workflows and built automation for recurring documentation tasks.</p>
+      </div>
+    </details>
   </div>
 </div>
 
-<div class="wrap section" id="experience">
-  <h2 style="margin: 0 0 32px 0;">Experience</h2>
+<div class="wrap" style="padding-top: 8px; padding-bottom: 8px;">
+  <details class="dd dd-top" id="experience">
+    <summary>Experience</summary>
+    <div class="dd-body">
+  <div class="testimonial">
+    <p>"Derek stays calm under pressure and works through problems methodically. He keeps communication open with subject matter experts and stakeholders so everyone stays aligned on new features, and he's especially good at explaining technical material to both technical and non-technical audiences — including outside clients."</p>
+    <cite>— Nancy Howard, former manager (13 years)</cite>
+  </div>
 
-  <div style="margin-bottom: 40px;">
-    <div class="job-header">
-      <div style="font-size: clamp(17px, 3vw, 20px); font-weight: 700;">Senior Technical Editor</div>
-      <div class="job-dates">May 2022 – August 2026</div>
-    </div>
-    <div class="job-company">ABC Fitness Solutions, LLC (formerly ABC Financial Services) — Remote</div>
+      <div class="dd-group">
+      <details class="dd">
+        <summary><span class="dd-title"><span>Senior Technical Editor</span><span class="dd-meta">May 2022 – August 2026</span><span class="dd-meta">ABC Fitness Solutions, LLC (formerly ABC Financial Services) — Remote</span></span></summary>
+        <div class="dd-body">
     <ul style="font-size: clamp(15px, 2.4vw, 17px); color: var(--lede);">
       <li>Documented API and product releases, working directly in development environments and coordinating closely with developers and QA testers to verify accuracy before publication. Products: Ignite Membership &amp; Operations, DataTrak (the legacy Club Reporting System), Employee Portal, Online Join/MYiclubonline, Ignite Engagement, and the Ignite API. Covered the majority of documentation output as the Documentation Team shrank from 3 to 2 people.</li>
       <li>Authored and maintained Swagger/OpenAPI documentation for the company's API products, covering 30+ endpoints, many of which developers changed over time to meet client expectations.</li>
@@ -165,58 +167,169 @@
       <li>Built video tutorials and training content using Camtasia, Captivate, and Snagit to supplement written documentation.</li>
       <li>Used version control across MadCap Central, GitHub, and SVN to manage documentation source and publishing pipelines.</li>
     </ul>
-  </div>
-
-  <div>
-    <div class="job-header">
-      <div style="font-size: clamp(17px, 3vw, 20px); font-weight: 700;">Technical Writer III</div>
-      <div class="job-dates">August 2012 – May 2022</div>
-    </div>
-    <div class="job-company">ABC Financial Services — Little Rock, Arkansas</div>
+        </div>
+      </details>
+      <details class="dd">
+        <summary><span class="dd-title"><span>Technical Writer III</span><span class="dd-meta">August 2012 – May 2022</span><span class="dd-meta">ABC Financial Services — Little Rock, Arkansas</span></span></summary>
+        <div class="dd-body">
     <ul style="font-size: clamp(15px, 2.4vw, 17px); color: var(--lede);">
       <li>Built foundational experience with the company's documentation systems and processes over a decade, including the core MadCap Flare help project and early API documentation practices that continued in the Senior Technical Editor role.</li>
       <li>Collaborated with subject matter experts and engineering stakeholders to translate complex technical systems into documentation for technical and non-technical audiences alike, including external clients.</li>
     </ul>
-  </div>
-
-  <div style="margin-top: 40px;">
-    <div class="job-header">
-      <div style="font-size: clamp(17px, 3vw, 20px); font-weight: 700;">Website Coordinator</div>
-      <div class="job-dates">March 2012 – October 2012</div>
-    </div>
-    <div class="job-company">Arkansas STEM Coalition — Little Rock Metropolitan Area</div>
+        </div>
+      </details>
+      <details class="dd">
+        <summary><span class="dd-title"><span>Website Coordinator</span><span class="dd-meta">March 2012 – October 2012</span><span class="dd-meta">Arkansas STEM Coalition — Little Rock Metropolitan Area</span></span></summary>
+        <div class="dd-body">
     <ul style="font-size: clamp(15px, 2.4vw, 17px); color: var(--lede);">
       <li>Managed web content optimization and documentation for the organization's public-facing site.</li>
     </ul>
-  </div>
-
-  <div class="testimonial">
-    <p>"Derek stays calm under pressure and works through problems methodically. He keeps communication open with subject matter experts and stakeholders so everyone stays aligned on new features, and he's especially good at explaining technical material to both technical and non-technical audiences — including outside clients."</p>
-    <cite>— Nancy Howard, former manager (13 years)</cite>
-  </div>
-</div>
-
-<div class="bg-dark" id="sample">
-  <div class="wrap section">
-    <h2 style="margin: 0 0 8px 0;">Project: ABC Ignite Help Center</h2>
-    <p style="font-size: clamp(13px, 2vw, 15px); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; color: #A8A29E; margin: 0 0 24px 0;">MadCap Flare &nbsp;·&nbsp; Structured single-sourcing &nbsp;·&nbsp; Swagger/OpenAPI &nbsp;·&nbsp; Knowledge base architecture</p>
-    <p style="font-size: clamp(15px, 2.6vw, 18px); line-height: 1.7;">Most of what I wrote was internal content, but this help center for ABC Fitness' Ignite product suite is public. The content is single-sourced using variables and conditional text to serve different audiences without duplicating content.</p>
-    <ul style="font-size: clamp(15px, 2.4vw, 17px);">
-      <li>Maintained the core help project and merged content from other writers into a shared source.</li>
-      <li>Wrote and kept current the release notes and feature documentation.</li>
-      <li>Authored Swagger/OpenAPI documentation.</li>
-      <li>Built the internal/external content split.</li>
-    </ul>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-      <a href="https://help.abcfitness.com/ignite/home.htm" target="_blank" rel="noopener" class="btn btn-accent">View the Ignite Help Center →</a>
-      <a href="api-docs.html" class="btn btn-outline" style="color: #FAF8F5; border-color: #FAF8F5;">View API Documentation Sample →</a>
+        </div>
+      </details>
+      </div>
     </div>
+  </details>
+</div>
+
+<div class="bg-dark">
+  <div class="wrap flare-notes" style="padding-top: 8px; padding-bottom: 8px;">
+    <details class="dd dd-top" id="samples">
+      <summary>Writing Samples</summary>
+      <div class="dd-body">
+        <div class="dd-group">
+          <details class="dd">
+            <summary>Single-Source Authoring with Flare</summary>
+            <div class="dd-body">
+<p>MadCap Flare is only one of several single-source help authoring tools, but it’s the one I’m most experienced with, and its robust features make it a popular option.</p>
+    <div class="dd-group">
+<details class="dd dd-t3">
+<summary>Conditional Text</summary>
+<div class="dd-body">
+    <p>MadCap Flare provides ways to manage large amounts of content for multiple audiences. The conditional text function lets you mark any content (text, tables, images, or anything else that’s visible on the page) with the conditions under which it will be included or excluded from the content.</p>
+    <p>For example, suppose you have a troubleshooting guide that you want to make available to anyone, but some of the steps are highly technical and come with some degree of risk, so those steps should only be attempted by a professional. You could offer the document in full, of course, with a callout like “Caution! Only tech support should attempt this step!”</p>
+    <p>Instead of hoping that non-professionals will follow that warning, you could remove it entirely from the external site accessible to the public by marking the sensitive information with an “INTERNAL” condition in Flare.</p>
+    <p>The deployment of the conditionals occurs when you configure your publishing targets. You will need at least two targets – one that publishes to your internal site, and one that is public-facing. On the conditional text include/exclude matrix, set the target that publishes to your internal site to INCLUDE the Internal conditional content, and set the target that publishes to the public-facing site to EXCLUDE it.</p>
+    <p><strong>NOTE:</strong> The newer versions of Flare will include non-excluded content by default. That means that if you do not specifically set that condition to be EXCLUDED by that target, it will be included. The best practice is to set each conditional to be explicitly either INCLUDED or EXCLUDED. This will prevent you from accidentally pushing sensitive content to the public, or from excluding it from the audience that should be able to access it.</p>
+    <p>In addition to using conditional text to internalize sensitive content, here are a few more examples:</p>
+    <ul>
+      <li>Exclude images from a text-only version</li>
+      <li>Display larger, easier-to-tap links on the mobile version of your content</li>
+      <li>Create a PDF that uses absolute links while the web version uses relative links. This allows the PDF to open the site directly to the linked information, while preserving the normal behavior of clicking a link on the web version.</li>
+    </ul>
+
+</div>
+</details>
+<details class="dd dd-t3">
+<summary>Using Flare with Other Users</summary>
+<div class="dd-body">
+    <p>If multiple technical writers are working in Flare on content that overlaps or even connects in any way, it’s important to communicate your intended publish schedule with the team to prevent overwriting, deleting, or modifying another writer’s work unintentionally.</p>
+    <p>There are a variety of ways to manage version control, including MadCap Central and Git. In short, version control is the practice of managing multiple versions of the same content, which involves comparing conflicting content, merging multiple sets of changes, and creating branches. Version control is a safety measure with which developers are already familiar, since they also need to be mindful when pushing their changes.</p>
+
+</div>
+</details>
+<details class="dd dd-t3">
+<summary>Master Projects</summary>
+<div class="dd-body">
+    <p>If you have multiple writers whose work does not usually overlap but needs to connect, you may find that a master project makes the process easier.</p>
+    <p>In this case, I recommend having one writer serve as “admin” by managing the master project. This is especially useful if you have multiple or unpredictable change or release schedules. Multiple projects can be imported into the master project, which can integrate and publish them all at once. Importing a “sub” project into a master project when a writer has changes to push is also a good way to make sure that stale or unused content is removed regularly.</p>
+
+</div>
+</details>
+<details class="dd dd-t3">
+<summary>Example Workflow with a Master Project</summary>
+<div class="dd-body">
+    <p>Bill, Ted, and Jill manage the company’s product help site. They have divided their work – Bill writes hardware information, Ted writes about the software, and Jill manages the customer message board. Jill works directly in the master project, while Bill works in a Flare project specifically for hardware, and Ted has the project for software.</p>
+    <p>When Bill has a new hardware document to publish, he lets Ted and Jill know. Meanwhile, Ted is overhauling dozens of topics in his project to make it more user-friendly. When Bill finishes the document, he commits and pushes the changes to his project in the repository. Since the help site is published from the master project, Bill doesn’t need to publish, he just needs to let Jill know about the change.</p>
+    <p>Jill opens the Import Project dialog in the master project. She has imported the project previously, so the only changed file she sees is Bill’s new document.  The Import Project function allows Jill to select any and all files individually. She selects only the new file and imports it to the folder for Bill’s hardware documentation.</p>
+    <p>At this point, Ted tells Jill that he has committed and pushed his changes in the software project. Jill locates the software project in the repository. Dozens of files have been deleted, added, and edited. In this case, she decides a clean import is called for. She deletes the previously imported version of Ted’s project, then completes a fresh import, marking the Delete Stale Files checkbox to ensure that any files that she previously imported from Ted into the master project will be removed, and that the imported version includes only what Ted intends.</p>
+    <p>Jill adds some new content of her own in the message board section, then publishes the master project. The changes of all three writers are included.</p>
+
+</div>
+</details>
+<details class="dd dd-t3">
+<summary>MadCap Flare cases</summary>
+<div class="dd-body">
+    <p>I’ve spent many years using Flare, and the following are just a few cases in which I encountered a request or issue, the reason or cause, and my solution.</p>
+
+<details class="dd dd-sub">
+<summary>Interactive Image</summary>
+<div class="dd-body">
+    <p><strong>ISSUE:</strong> The product manager wanted to send clients a link to a webpage that explains the parts of a new user interface to clients.</p>
+    <p><strong>REASON:</strong> The interface is an update of one that clients are familiar with. They know what functions should be there, but they don’t know where to click. There are a lot of buttons, so a simple diagram with callouts could quickly become cluttered and unreadable.</p>
+    <p><strong>FIX:</strong> I created an image map within a Flare topic. Here’s how:</p>
+    <ol>
+      <li>Write a list of every part of the interface that needs detailing.</li>
+      <li>Create an individual topic for each part of the image (ex. “profile.htm,” “settings.htm,” etc.)</li>
+      <li>Take a high-resolution screenshot of the interface and insert it in a new Flare help topic.</li>
+      <li>Right-click the image in the XML editor.</li>
+      <li>Navigate to Context &gt; Image Map. The Image Map Editor will open.</li>
+      <li>Select a shape to draw (rectangle, circle, or irregular).</li>
+      <li>Drag your mouse over the full area of the first part of the interface. The shape will be displayed on the image. The shape will not be visible on the final image, it just separates and defines the boundaries of the areas you want to define.</li>
+      <li>Select Area Properties.</li>
+      <li>Set Link to to File in Project. (see note below)</li>
+      <li>Select the topic that corresponds to the area you defined.</li>
+      <li>Set the Target Frame to Popup Window if you want the full content of that topic to appear as a popup when the user hovers the mouse over that area. If the topic is more than a sentence or two, you may want to set the Target Frame to New Tab or New Window. You probably want to avoid the Same Window option, since clicking will navigate the user away from the page.</li>
+      <li>Continue from Step 6 with the next shape until all areas are defined. Avoid overlapping shapes if possible. The overlapping area will usually default to showing the link associated with the top / most recent shape.</li>
+    </ol>
+    <p><strong>NOTE:</strong> Alternatively, if you want to keep the content consolidated to one topic, you can add the entire text to the page with the image map. On Step 8, set Set Link to to Place in this Document and select the header or bookmark on that page you want to scroll to when the user clicks there.</p>
+
+</div>
+</details>
+<details class="dd dd-sub">
+<summary>PDF Generation</summary>
+<div class="dd-body">
+    <p><strong>ISSUE:</strong> A PDF built in Flare cannot be opened.</p>
+    <p>Sometimes you can generate a PDF with Flare and see that the build is complete, but clicking it does nothing. It took me some research to discover the cause of this issue, because the error doesn’t occur within Flare itself.</p>
+    <p><strong>REASON:</strong> The culprit is a program called AdobeCollabSync.exe. Adobe says this program assists with shared workflows, but it has only ever caused me problems. This is the program that keeps the PDF from opening.</p>
+
+    <p><strong>QUICK FIX:</strong></p>
+    <p>The following steps will fix the problem in this instance only.</p>
+    <ol>
+      <li>Navigate to Task Manager (CTRL + SHIFT + ESC).</li>
+      <li>Do only one of the following:
+        <ol type="a">
+          <li>Scroll until you find AdobeCollabSync.exe. Hold CTRL while scrolling to prevent the list from jumping to a different place.</li>
+          <li>Start typing “adobesync” until AdobeCollabSync.exe is highlighted.</li>
+        </ol>
+      </li>
+      <li>When you find AdobeCollabSync.exe, right-click it and select End Task.</li>
+      <li>Return to Flare and try to open the PDF again. It should open immediately with no issues.</li>
+    </ol>
+
+    <p><strong>LONG-TERM FIX:</strong></p>
+    <p>Assuming you do not want to remove any Adobe applications, this problem will occur again. I find that if it happens once, it will almost certainly happen again until you restart your machine. The following solution will let you avoid having to follow the steps above every time.</p>
+    <ol>
+      <li>Navigate to your desktop by minimizing or closing all open applications or by holding the Windows key and pressing D.</li>
+      <li>Right-click an empty spot on the desktop and select New &gt; Shortcut.</li>
+      <li>In the empty location field, enter the following: <code>taskkill /f /im adobecollabsync.exe</code></li>
+      <li>Name the shortcut something you will remember, like “Kill AdobeCollabSync.”</li>
+      <li>Click Finish.</li>
+    </ol>
+    <p>Note: Optionally, you can stop at this point. At any point, you can run the code by navigating to the shortcut and opening it. However, you can follow the next few steps to create a quicker solution.</p>
+    <ol start="6">
+      <li>Right-click your new shortcut, select Properties, click inside the Shortcut key box.</li>
+      <li>Press the key combination you want to use to run this code, for example CTRL + ALT + K. (Make sure the key combination you select is not already in use.)</li>
+      <li>Click OK.</li>
+    </ol>
+    <p>Now you can easily open the shortcut and run the code to immediately end the AdobeCollabSync.exe process. If you encounter this issue as often as I have, you should find that this will save you a lot of time in the long-run. When a PDF will not open from the Builds window in Flare, use your keyboard shortcut and try again. The code shouldn’t need more than a second or two to end that process and allow your PDF to open correctly.</p>
+
+</div>
+</details>
+</div>
+</details>
+    </div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </details>
   </div>
 </div>
 
-<div class="wrap section" id="skills">
-  <h2 style="margin: 0 0 28px 0;">Skills</h2>
-
+<div class="wrap" style="padding-top: 8px; padding-bottom: 8px;">
+  <details class="dd dd-top" id="skills">
+    <summary>Skills</summary>
+    <div class="dd-body">
   <div class="skill-group">
     <div class="skill-label">API Documentation</div>
     <div class="skill-list">Swagger/OpenAPI, REST APIs, Postman, 3scale</div>
@@ -241,51 +354,52 @@
     <div class="skill-label">Cross-Functional Collaboration</div>
     <div class="skill-list">Engineering and QA coordination, Technical Support partnership, SME interviewing, stakeholder communication, editing and QA review</div>
   </div>
+    </div>
+  </details>
 </div>
 
-<div class="wrap section">
-  <h2 style="margin: 0 0 12px 0;">Education</h2>
+<div class="wrap" style="padding-top: 0; padding-bottom: 8px;">
+  <details class="dd dd-top">
+    <summary>Education</summary>
+    <div class="dd-body">
   <div style="font-size: clamp(16px, 2.6vw, 18px); font-weight: 700;">Bachelor of Arts, Professional, Technical, Business, and Scientific Writing</div>
   <div style="font-size: clamp(14px, 2.2vw, 16px); color: var(--muted);">University of Arkansas at Little Rock — 2009–2012</div>
+    </div>
+  </details>
 </div>
 
-<div class="bg-cream" id="contact">
-  <div class="wrap section">
-    <h2 style="margin: 0 0 16px 0;">Get in Touch</h2>
+<div class="bg-cream">
+  <div class="wrap" style="padding-top: 8px; padding-bottom: 8px;">
+    <details class="dd dd-top" id="contact">
+      <summary>Get in Touch</summary>
+      <div class="dd-body">
     <p style="font-size: clamp(15px, 2.4vw, 17px); line-height: 1.6; color: var(--lede); max-width: 640px; margin: 0 0 20px 0;">I'm looking for technical writing, editing, and documentation roles — remote or open to relocation. Feel free to reach out directly.</p>
     <div style="display: flex; gap: clamp(12px, 3vw, 24px); flex-wrap: wrap; font-size: clamp(14px, 2.2vw, 16px); font-weight: 600;">
       <a href="mailto:dbcarttar@gmail.com">dbcarttar@gmail.com</a>
       <a href="https://www.linkedin.com/in/derek-carttar-0bb67237" target="_blank" rel="noopener">LinkedIn</a>
-       </div>
+      <span style="color: var(--muted);">McCrory, AR</span>
+    </div>
+      </div>
+    </details>
   </div>
 </div>
 
 <script>
-  // Light / dark toggle (shares the "theme" key with the other pages).
+  // Open the collapsed section(s) that contain a link target, so nav links land on visible content.
   (function () {
-    var btn = document.getElementById('theme-toggle');
-    var root = document.documentElement;
-    function label() {
-      var dark = root.getAttribute('data-theme') === 'dark';
-      btn.querySelector('.tt-text').textContent = dark ? 'Light mode' : 'Dark mode';
-      btn.querySelector('.tt-icon').textContent = dark ? '\u2600\uFE0E' : '\u263E\uFE0E';
-      btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
-      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    function openFor(id) {
+      var el = id ? document.getElementById(decodeURIComponent(id)) : null;
+      if (!el) return;
+      for (var n = el; n; n = n.parentElement) {
+        if (n.tagName === 'DETAILS' && n.classList.contains('dd')) n.open = true;
+      }
+      el.scrollIntoView();
     }
-    btn.addEventListener('click', function () {
-      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch (e) {}
-      label();
+    window.addEventListener('hashchange', function () { openFor(location.hash.slice(1)); });
+    document.querySelectorAll('nav a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function () { openFor(a.getAttribute('href').slice(1)); });
     });
-    if (window.matchMedia) {
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-        var saved = null;
-        try { saved = localStorage.getItem('theme'); } catch (err) {}
-        if (!saved) { root.setAttribute('data-theme', e.matches ? 'dark' : 'light'); label(); }
-      });
-    }
-    label();
+    openFor(location.hash.slice(1));
   })();
 </script>
 </body>
